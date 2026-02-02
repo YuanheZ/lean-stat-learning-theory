@@ -35,6 +35,7 @@ Our formalization library `SLT` contains (but not limited to):
 | `gaussian_logSobolev_W12_pi` | Boucheron et al. (2013), Theorem 5.4 |
 | `lipschitz_cgf_bound` | Boucheron et al. (2013), Theorem 5.5 |
 | `gaussian_lipschitz_concentration` | Boucheron et al. (2013), Theorem 5.6 |
+| `one_step_discretization` | Wainwright (2019), Proposition 5.17 |
 | `local_gaussian_complexity_bound` | Wainwright (2019), (5.48) Gaussian Case |
 | `master_error_bound` | Wainwright (2019), Theorem 13.5 |
 | `gaussian_complexity_monotone` | Wainwright (2019), Lemma 13.6 |
