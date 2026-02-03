@@ -299,9 +299,11 @@ $$
 < \infty. \tag{*}
 $$
 Now combine (*) with
+
 $$
 Ent(f^2)\le \liminf_{k\to\infty}Ent(g_k^2),
 $$
+
 to get all finiteness, then we can convert back to real space.
 
 ### Conclude the Limit
