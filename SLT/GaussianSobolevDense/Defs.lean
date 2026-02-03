@@ -10,7 +10,6 @@ import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Module.FiniteDimension
-import SLT.MeasurePiLemmas
 import SLT.GaussianMeasure
 
 /-!
