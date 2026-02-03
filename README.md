@@ -11,7 +11,7 @@ We present the first comprehensive Lean 4 formalization of statistical learning 
      and the <span style="color:#b30000;">red</span> part for concentration.
      The colored zone indicates the major results in the chapters of
      Wainwright (2019, <em>High-Dimensional Statistics</em>) and
-     Boucheron, Lugosi, Massart (2013, <em>Concentration Inequalities</em>).    
+     Boucheron et al. (2013, <em>Concentration Inequalities</em>).    
     </em>
 </div>
 
