@@ -1,4 +1,4 @@
-# Lean 4 Formalization Agent Recipe
+# Lean 4 Vibe-Formalization Recipe
 
 A practical guide and workflow for using agents to formalize mathematical proofs in Lean 4, summarized from our extensive experiences.
 
