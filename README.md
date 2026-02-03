@@ -74,7 +74,7 @@ Our formalization library `SLT` contains (but not limited to):
 To extend formal SLT to the frontiers of current research in the field, we continue working on:
 
 - Random matrices (e.t.c., Matrix Bernstein, covariance estimation)
-- Advanced covering (e.t.c. neural networks)
+- Advanced covering (e.t.c., neural networks)
 - Benign Overfitting
 
 ## Acknowledgement
