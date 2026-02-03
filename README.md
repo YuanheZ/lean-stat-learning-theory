@@ -49,3 +49,10 @@ Our formalization library `SLT` contains (but not limited to):
 - Raskutti, G., Wainwright, M. J., & Yu, B. (2011). Minimax rates of estimation for high-dimensional linear regression over ℓ_q-balls. *IEEE Transactions on Information Theory*, 57(10), 6976–6994.
 - Vershynin, R. (2018). *High-Dimensional Probability: An Introduction with Applications in Data Science* (Vol. 47). Cambridge University Press.
 - Wainwright, M. J. (2019). *High-Dimensional Statistics: A Non-Asymptotic Viewpoint* (Vol. 48). Cambridge University Press.
+
+## Acknowledgement
+
+- `SLT/SeparableSpaceSup.lean` is sourced from [lean-rademacher](https://github.com/auto-res/lean-rademacher.git). We use `separableSpaceSup_eq_real` from it in `SLT/Dudley.lean`.
+- `Clt/` is sourced from [CLT](https://github.com/RemyDegenne/CLT.git). We use `tendsto_iff_tendsto_charFun` from `Clt/Inversion.lean` in `SLT/GaussianPoincare/Limit.lean`.
+
+We greatly appreciate these two remarkable repositories.
