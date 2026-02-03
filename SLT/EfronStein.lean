@@ -1,5 +1,3 @@
-import SLT.MeasurePiLemmas
-import SLT.ExpectationInequalities
 import Mathlib.Probability.Moments.Variance
 import Mathlib.MeasureTheory.Integral.Pi
 import Mathlib.MeasureTheory.Integral.Prod
