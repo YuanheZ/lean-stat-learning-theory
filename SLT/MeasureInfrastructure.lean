@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.MeasureTheory.Integral.Layercake
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
@@ -282,5 +287,6 @@ theorem expected_max_subGaussian {ι : Type*}
         apply mul_le_mul_of_nonneg_left hlog_bound
         exact le_of_lt (one_div_pos.mpr ht_pos)
     _ = σ * sqrt (2 * log n) := h_algebra
+
 
 end
