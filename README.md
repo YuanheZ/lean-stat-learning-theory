@@ -10,7 +10,7 @@ We present the first comprehensive Lean 4 formalization of statistical learning 
 ## Implementation Roadmap
 
 <h1 align="center"> 
-    <img src="./figs/level-2.jpg" width="700">
+    <img src="./figs/level-2.jpg" width="1200">
 </h1>
 
 ## How to Run
