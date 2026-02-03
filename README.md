@@ -1,7 +1,11 @@
 # Statistical Learning Theory in Lean 4: Empirical Processes from Scratch
 
 ## Abstract
-We present the first comprehensive Lean 4 formalization of statistical learning theory (SLT) grounded in empirical process theory. Our end-to-end formal infrastructure implement the missing contents in latest Lean library, including a complete development of Gaussian Lipschitz concentration, the first formalization of Dudley’s entropy integral theorem for sub-Gaussian processes, and an application to least-squares regression with a sharp rate. The project was carried out using a human–AI collaborative workflow, in which humans design proof strategies and AI agents execute tactical proof construction, resulting in approximately 30,000 lines of human-verified Lean 4 code produced over 500 hours of supervised development. Beyond implementation, the formalization process exposes and resolves implicit assumptions and missing details in standard SLT textbooks, enforcing a granular, line-by-line understanding of the theory. This work establishes a reusable formal foundation for future developments in machine learning theory. The code is provided in the supplementary materials.
+We present the first comprehensive Lean 4 formalization of statistical learning theory (SLT) grounded in empirical process theory. Our end-to-end formal infrastructure implement the missing contents in latest Lean library, including a complete development of Gaussian Lipschitz concentration, the first formalization of Dudley’s entropy integral theorem for sub-Gaussian processes, and an application to least-squares regression with a sharp rate. The project was carried out using a human–AI collaborative workflow, in which humans design proof strategies and AI agents execute tactical proof construction, resulting in approximately 30,000 lines of human-verified Lean 4 code produced over 500 hours of supervised development. Beyond implementation, the formalization process exposes and resolves implicit assumptions and missing details in standard SLT textbooks, enforcing a granular, line-by-line understanding of the theory. This work establishes a reusable formal foundation for future developments in machine learning theory.
+
+<h1 align="center"> 
+    <img src="./figs/level-1.jpg" width="600">
+</h1>
 
 ## How to Run
   ```bash
