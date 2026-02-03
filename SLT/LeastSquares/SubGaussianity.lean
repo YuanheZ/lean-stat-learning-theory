@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import Mathlib
 import SLT.LeastSquares.Defs
 import SLT.GaussianMeasure
@@ -207,3 +212,4 @@ lemma empiricalProcess_subGaussian_bound (n : ℕ) (hn : 0 < n) (x : Fin n → X
   ring
 
 end LeastSquares
+
