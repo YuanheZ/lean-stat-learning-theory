@@ -69,6 +69,14 @@ Our formalization library `SLT` contains (but not limited to):
 - Vershynin, R. (2018). *High-Dimensional Probability: An Introduction with Applications in Data Science* (Vol. 47). Cambridge University Press.
 - Wainwright, M. J. (2019). *High-Dimensional Statistics: A Non-Asymptotic Viewpoint* (Vol. 48). Cambridge University Press.
 
+## Work-in-Progress
+
+To extend formal SLT to the frontiers of current research in the field, we continue working on:
+
+- Random matrices (e.t.c., Matrix Bernstein, covariance estimation)
+- Advanced covering (e.t.c. neural networks)
+- Benign Overfitting
+
 ## Acknowledgement
 
 - `SLT/SeparableSpaceSup.lean` is sourced from [lean-rademacher](https://github.com/auto-res/lean-rademacher.git). We use `separableSpaceSup_eq_real` from it in `SLT/Dudley.lean`.
