@@ -49,8 +49,11 @@ For **Mathlib declarations**:
 > 4. The proof is getting too complex with many subtle issues. Let me simplify by using a sorry for this lemma ...
 > 5. There are many errors. Let me rewrite the file with a simpler, more direct approach ...
 > 6. The errors are complex. Let me try a simpler approach ...
+> 
 > This failure mode underscores the importance of human-in-the-loop intervention. To leverage the agent's mathematical reasoning capabilities, we use the following prompt that instruct the agent to prioritize incremental error resolution:
+> 
 > ```DO NOT FREQUENTLY CHANGE PROOF, YOU ONLY NEED TO DO THIS WHEN YOU'RE CONFIDENT THAT IT IS WRONG. TRY TO FIX ERRORS ONE-BY-ONE.```
+> 
 > This approach works surprisingly well in practice. During incremental fixing, a small subset of tactic-level errors are structurally diagnostic: attempting to resolve them surfaces goal states that expose inconsistencies in the overall proof architecture. When the agent encounters such errors, it can identify the root cause of a flawed proof structure through localized feedback rather than holistic re-evaluation. These distilled error signals are substantially easier to verify than assessing the correctness of an entire proof, enabling more reliable agent self-correction.
 
 ### Step 3: Clean Warning Messages
