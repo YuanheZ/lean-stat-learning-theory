@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import SLT.GaussianMeasure
 
 open MeasureTheory ProbabilityTheory Real Finset BigOperators Function
@@ -110,3 +115,4 @@ lemma integral_centeredLipschitz_eq_zero (f : (Fin n → ℝ) → ℝ) (L : ℝ)
   simp only [integral_const, probReal_univ, smul_eq_mul, one_mul, sub_self]
 
 end LipschitzConcentration
+
