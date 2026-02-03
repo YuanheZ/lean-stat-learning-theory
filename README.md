@@ -7,6 +7,12 @@ We present the first comprehensive Lean 4 formalization of statistical learning 
     <img src="./figs/level-1.jpg" width="600">
 </h1>
 
+## Implementation Roadmap
+
+<h1 align="center"> 
+    <img src="./figs/level-2.jpg" width="700">
+</h1>
+
 ## How to Run
   ```bash
   # get Mathlib4 cache 
