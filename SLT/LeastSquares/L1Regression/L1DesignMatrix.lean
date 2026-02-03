@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import SLT.LeastSquares.L1Regression.L1ShiftedClass
 import SLT.LeastSquares.LinearRegression.DesignMatrix
 
