@@ -74,6 +74,8 @@ Remove unused `have` statements systematically with this prompt:
 Clean up unused have statements from the target Lean file. First, use the MCP tool mcp__lean-lsp__lean_file_outline with the absolute file path to get the file outline and identify all theorem/lemma declarations in the file. Then, update @TestUnusedHave.lean to include #check_unused_have command for each declaration you want to analyze (replace instead of adding). Run lake build TestUnusedHave to identify which theorems have unused have statements and note their names. For each unused statement reported, use Grep to find its exact location in the file, then use Edit to remove the entire have statement including any multi-line proof body. Work from bottom to top (highest line numbers first) to preserve line number accuracy during edits. For have statements on the same line as other tactics (like have hX := rfl; linarith), either inline the fact into the tactic (e.g., linarith [show X from rfl]) or just keep the tactic if it doesn't need the fact. After removing all identified statements, run lake build [FILENAME] to verify compilation succeeds. Then re-run lake build TestUnusedHave to check for any cascading unused statements that were exposed (statements that were only used by the ones you just removed). Repeat the removal and verification cycle until all theorems in the file report "No unused have statements found". Track progress and provide a summary of total statements removed when complete. The target Lean file is [FILENAME].
 ```
 
+> ⚠️ **Important**: We recommend to repeatedly run Step 3 & 4 until they are both clean.
+
 ## Best Practices
 
 ### Do's ✅
