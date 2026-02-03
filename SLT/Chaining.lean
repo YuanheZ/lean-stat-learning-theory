@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import SLT.CoveringNumber
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
@@ -317,5 +322,6 @@ lemma dist_transitiveProj_consecutive {s : Set A} {D : ℝ} (dn : DyadicNets s D
   -- Since nets_k is an ε_k-net of s and v ∈ s, we have dist(projectToNet k v, v) ≤ ε_k
   rw [dist_comm]
   exact dist_projectToNet_le dn k (hnet_nonempty k) hv_mem_s
+
 
 end
