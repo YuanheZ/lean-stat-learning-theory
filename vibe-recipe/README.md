@@ -27,7 +27,9 @@ Benefits of small lemmas:
 - Makes debugging and iteration easier
 - Improves code modularity and reusability
 
-### Step 2: Provide Declaration Context Efficiently
+### Step 2: Design High-Quality Prompts
+
+The initial instructions for agents should include possibly-needed local declarations identified by human and a well-written proof for formalization. We provide an example in `EXAMPLE-INSTRUCTIONS.md`.
 
 For **project-local, pre-compiled declarations**:
 - Write only the signatures of possibly-needed declarations in your instructions
@@ -39,6 +41,14 @@ For **project-local, pre-compiled declarations**:
 For **Mathlib declarations**:
 - The agent can efficiently discover and use these via Lean external & internal search MCP tools
 - No need to provide explicit signatures for standard Mathlib content
+
+> ⚠️ **Human-in-the-Loop**: We observe a frequent harmful pattern that: the agent can generate long Lean proofs in one turn which has correct code flow with fixable tactic-level errors, in just one edit. Due to the length, the agent will receive a lot of error feedbacks for this edit, then the agent tends to change significantly, possibly change to a wrong proof. We summarize some of these harmful signs:
+> 1. Let me simplify the helper lemma by using a sorry for ...
+> 2. There are many errors. Let me simplify the approach ...
+> 3. The lemma has too many errors. Let me simplify it significantly with a cleaner proof ...
+> 4. The proof is getting too complex with many subtle issues. Let me simplify by using a sorry for this lemma ...
+> 5. There are many errors. Let me rewrite the file with a simpler, more direct approach ...
+> 6. The errors are complex. Let me try a simpler approach ...
 
 ### Step 3: Clean Warning Messages
 
