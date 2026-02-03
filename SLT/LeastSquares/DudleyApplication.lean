@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
+-/
 import Mathlib
 import SLT.LeastSquares.Defs
 import SLT.LeastSquares.SubGaussianity
@@ -1165,3 +1170,4 @@ lemma local_gaussian_complexity_bound (n : ℕ) (hn : 0 < n) (H : Set (X → ℝ
     _ = (24 * Real.sqrt 2) / Real.sqrt n * entropyIntegral Gx (2*δ) := by ring
 
 end LeastSquares
+
