@@ -306,9 +306,9 @@ $$
 
 to get all finiteness, then we can convert back to real space.
 
-### Conclude the Limit
+### Step 7: Conclude the Limit
 
-$$\text{Ent}(f^2) \leq 2\mathbf{E}\left[\|\nabla f(X)\|^2\right].$$
+$$\text{Ent}(f^2) \leq 2\mathbf{E}\left[\|\nabla f(X)\|^2\right]$$
 follows from results formalized, add the proof by yourself.
 
 ---
