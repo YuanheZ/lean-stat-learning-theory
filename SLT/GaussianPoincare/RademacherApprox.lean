@@ -3,13 +3,13 @@ Copyright (c) 2026 Yuanhe Zhang. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
 -/
+import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.Probability.IdentDistrib
 import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.Independence.Integration
 import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Variance
-import Clt.CLT
 
 /-!
 # Approximation of Standard Gaussian via Rademacher Sums
@@ -28,7 +28,6 @@ normalized sums of Rademacher random variables via the Central Limit Theorem.
 * `rademacher_variance_one`: The variance of a Rademacher random variable is 1.
 * `rademacherSum_expectation_zero`: `E[S_n] = 0`.
 * `rademacherSum_variance_one`: `Var(S_n) = 1`.
-* `rademacherSum_tendsto_stdGaussian`: `S_n` converges in distribution to `N(0,1)` as `n → ∞`.
 
 -/
 
@@ -158,14 +157,9 @@ structure IndepRademacherSeq (P : ProbabilityMeasure Ω) where
 
 variable {Ω}
 
-/-- The normalized Rademacher sum: `S_n = n^{-1/2} * ∑_{j=0}^{n-1} ε_j`.
-This is equivalent to `invSqrtMulSum` from Clt.CLT. -/
+/-- The normalized Rademacher sum: `S_n = n^{-1/2} * ∑_{j=0}^{n-1} ε_j`. -/
 def rademacherSum (ε : ℕ → Ω → ℝ) (n : ℕ) (ω : Ω) : ℝ :=
   (√n)⁻¹ * ∑ i : Fin n, ε i ω
-
-/-- The Rademacher sum equals the CLT's invSqrtMulSum. -/
-theorem rademacherSum_eq_invSqrtMulSum {Ω : Type*} (ε : ℕ → Ω → ℝ) (n : ℕ) :
-    rademacherSum ε n = ProbabilityTheory.invSqrtMulSum ε n := rfl
 
 /-! ### Main Properties of Rademacher Sum -/
 
@@ -290,23 +284,6 @@ theorem rademacherSum_variance_one (seq : IndepRademacherSeq Ω P) (n : ℕ) (hn
     apply integrable_finset_sum Finset.univ
     intro j _
     exact seq.integrable_mul i j
-
-/-! ### Convergence to Standard Gaussian -/
-
-/-- **Central Limit Theorem for Rademacher Sums**
-The normalized Rademacher sum `S_n` converges in distribution to the standard Gaussian `N(0,1)`. -/
-theorem rademacherSum_tendsto_stdGaussian (seq : IndepRademacherSeq Ω P) :
-    Tendsto (fun n => P.map (ProbabilityTheory.aemeasurable_invSqrtMulSum n seq.measurable))
-      atTop (𝓝 ProbabilityTheory.stdGaussian) := by
-  apply ProbabilityTheory.central_limit seq.measurable
-  · -- P[ε_0] = 0
-    exact (seq.isRademacher 0).expectation_zero (seq.measurable 0)
-  · -- P[ε_0^2] = 1
-    exact (seq.isRademacher 0).second_moment (seq.measurable 0)
-  · -- Independence
-    exact seq.indep
-  · -- Identical distribution
-    exact seq.ident
 
 end RademacherApprox
 
