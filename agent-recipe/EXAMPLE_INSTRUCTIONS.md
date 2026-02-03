@@ -288,6 +288,8 @@ Ent(f^2)\le \liminf_{k\to\infty}Ent(g_k^2),
 $$
 which is the exact lower semicontinuity.
 
+---
+
 ### Step 6: Back to Real Space
 
 By `tendsto_integral_norm_fderiv_sq_of_sobolev` and `gaussian_logSobolev_CompSmo_fderiv`, we can obtain
@@ -305,6 +307,8 @@ Ent(f^2)\le \liminf_{k\to\infty}Ent(g_k^2),
 $$
 
 to get all finiteness, then we can convert back to real space.
+
+---
 
 ### Step 7: Conclude the Limit
 
