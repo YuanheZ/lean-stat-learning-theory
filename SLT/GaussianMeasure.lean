@@ -1,6 +1,6 @@
 import SLT.MeasureInfrastructure
-import SLT.MeasurePiLemmas
 import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.Independence.Basic
 
 /-!
 # Gaussian Measure Properties for Product Spaces
@@ -75,13 +75,13 @@ standard Gaussians. -/
 lemma iIndepFun_eval_stdGaussianPi :
     iIndepFun (fun i (w : Fin n → ℝ) => w i) (stdGaussianPi n) := by
   unfold stdGaussianPi
-  exact pi_eval_iIndepFun
+  exact iIndepFun_pi (fun _ => measurable_id.aemeasurable)
 
 /-- The pushforward of stdGaussianPi under coordinate projection is gaussianReal 0 1 -/
 lemma map_eval_stdGaussianPi (i : Fin n) :
     (stdGaussianPi n).map (fun w => w i) = gaussianReal 0 1 := by
   unfold stdGaussianPi
-  exact pi_map_eval i
+  exact (measurePreserving_eval (fun _ : Fin n => gaussianReal 0 1) i).map_eq
 
 /-- MGF of coordinate projection equals standard Gaussian MGF -/
 lemma mgf_eval_stdGaussianPi (i : Fin n) (t : ℝ) :
