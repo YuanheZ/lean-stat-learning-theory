@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Kei Tsukamoto. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kei Tsukamoto, Kazumi Kasaura, Naoto Onda, Sho sonoda, Yuma Mizuno
+-/
 import Mathlib.Topology.Bases
 import Mathlib.Order.ConditionallyCompleteLattice.Indexed
 import Mathlib.Topology.Order.Lattice
