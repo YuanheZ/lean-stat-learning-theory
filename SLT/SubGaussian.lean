@@ -1,4 +1,3 @@
-import SLT.Hoeffding
 import SLT.MeasureInfrastructure
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -679,3 +678,4 @@ lemma subGaussian_process_centered {Ω : Type*} [MeasurableSpace Ω]
   exact IsLocalMax.hasDerivAt_eq_zero h_local_max h_g_deriv
 
 end
+
