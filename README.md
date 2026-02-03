@@ -73,5 +73,6 @@ Our formalization library `SLT` contains (but not limited to):
 
 - `SLT/SeparableSpaceSup.lean` is sourced from [lean-rademacher](https://github.com/auto-res/lean-rademacher.git). We use `separableSpaceSup_eq_real` from it in `SLT/Dudley.lean`.
 - `Clt/` is sourced from [CLT](https://github.com/RemyDegenne/CLT.git). We use `tendsto_iff_tendsto_charFun` from `Clt/Inversion.lean` in `SLT/GaussianPoincare/Limit.lean`.
+- We use mcp tools from [lean-lsp-mcp](https://github.com/oOo0oOo/lean-lsp-mcp.git) to enable the agent to interact with live LSP feedbacks and retrieve relevant information.
 
-We greatly appreciate these two remarkable repositories.
+We greatly appreciate these remarkable repositories.
