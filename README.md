@@ -37,6 +37,7 @@ Our formalization library `SLT` contains (but not limited to):
 
 | Name | Reference |
 |------|-----------|
+| `small_ball_prob` | Vershynin (2018), Exercise 2.2.10 |
 | `coveringNumber_lt_top_of_totallyBounded` | Vershynin (2018), Remark 4.2.3 |
 | `isENet_of_maximal` | Vershynin (2018), Lemma 4.2.6 |
 | `coveringNumber_euclideanBall_le` | Vershynin (2018), Corollary 4.2.13 |
