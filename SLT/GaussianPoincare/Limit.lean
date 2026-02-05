@@ -4,12 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
 -/
 import SLT.GaussianPoincare.TaylorBound
+import SLT.GaussianPoincare.LevyContinuity
 import SLT.GaussianLSI.Entropy
 import Mathlib.Topology.ContinuousMap.Bounded.Basic
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
-import SLT.GaussianPoincare.LevyContinuity
 
 /-!
 # Gaussian Poincaré Inequality via Limit of Rademacher Sums
