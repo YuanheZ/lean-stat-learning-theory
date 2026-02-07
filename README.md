@@ -65,6 +65,24 @@ Our formalization library `SLT` contains (but not limited to):
 | `bad_event_probability_bound` | Wainwright (2019), Lemma 13.12 |
 | `l1BallImage_coveringNumber_le` | Raskutti et al. (2011), Lemma 4, q=1 |
 
+## Dataset
+
+We release a high-quality Lean 4 training dataset for LLM's formal reasoning — 865 traced theorems, 18,669 tactic steps, 300M tokens from our SLT library. Every proof is human-verified, non-LLM-synthetic with full proof state traces (state_before → tactic → state_after).
+
+<div align="center">
+
+| **Dataset** | **Download** |
+| :------------: | :------------: |
+| **Novel** | [🤗 HuggingFace](https://huggingface.co/datasets/liminho123/lean4-stat-learning-theory-novel)   |
+| **Random** | [🤗 HuggingFace](https://huggingface.co/datasets/liminho123/lean4-stat-learning-theory-random)   |
+| **Corpus** | [🤗 HuggingFace](https://huggingface.co/datasets/liminho123/lean4-stat-learning-theory-corpus)   |
+
+</div>
+
+- **Novel**: Validation and test sets contain theorems that use premises not seen during training (harder evaluation).
+- **Random**: Theorems are split randomly.
+- **Corpus**: 3,021 premises across 470 files (SLT library + referenced Mathlib/Lean4 stdlib declarations). Used for retrieval-augmented proving.
+
 ## References
 
 - Boucheron, S., Lugosi, G., & Massart, P. (2013). *Concentration Inequalities: A Nonasymptotic Theory of Independence*. Oxford University Press.
