@@ -100,15 +100,15 @@ We provide a practical recipe for human–AI collaborative formalization in Lean
 
 **Workflow at a glance.** The process follows four iterative steps:
 
-1. **Decompose proofs into small lemmas.** Each lemma should be completable within a single agent context window (~300 lines) without auto-compaction. Small units increase the agent's effective thinking budget, reduce the risk of context overflow, and improve modularity.
+1. **Decompose proofs into small lemmas.** We recommend to ensure the target to formalize can be finished within a single agent context window (~300 lines) without auto-compaction. Small units increase the agent's effective thinking budget, reduce the information loss of context compaction.
 
 2. **Design high-quality prompts.** Supply the agent with (a) signatures of possibly-needed project-local declarations obtained via the file outline MCP tool—*never* full file contents, which quickly fill the context window and cause hallucinations—and (b) a well-written mathematical proof to formalize. Mathlib declarations can be discovered on-the-fly through Lean search MCP tools. A worked example is given in [`vibe-recipe/EXAMPLE_INSTRUCTIONS.md`](./vibe-recipe/EXAMPLE_INSTRUCTIONS.md).
 
-3. **Clean compiler warnings.** Instruct the agent to eliminate all warnings, explicitly directing it to *remove* unused variables rather than masking them with `_` (a default preference of `Claude-Opus-4.5`).
+3. **Clean compiler warnings.** Instruct the agent to eliminate all warnings, explicitly directing it to *remove* unused variables rather than masking them with `_` (a harmful preference of `Claude-Opus-4.5`).
 
 4. **Clean unused `have` statements.** Use the custom `#check_unused_have` metaprogram ([`vibe-recipe/UnusedHaveDetector.lean`](./vibe-recipe/UnusedHaveDetector.lean)) to detect and remove dead `have` bindings from proof terms. Repeat Steps 3–4 until both are clean.
 
-**Human-in-the-loop intervention.** A recurring failure mode we observe is that when the agent faces many simultaneous tactic errors in a long proof, it tends to abandon a largely correct proof structure in favor of drastic—and often incorrect—rewrites (e.g., *"Let me simplify the approach…"*). To counteract this, we instruct the agent: `DO NOT FREQUENTLY CHANGE PROOF. TRY TO FIX ERRORS ONE-BY-ONE.` This forces incremental error resolution, which surfaces structurally diagnostic errors that expose the true root cause rather than triggering wholesale re-proofs.
+**Human-in-the-loop intervention.** A recurring failure mode we observe is that when the agent faces many simultaneous tactic errors in a long proof, it tends to abandon a largely correct proof structure in favor of drastic—and often incorrect—rewrites (e.g., *"Let me simplify the approach…"*). To counteract this, we instruct to encourage the agent always to fix errors first. This forces incremental error resolution, which surfaces structurally diagnostic errors that expose the true root cause rather than triggering wholesale re-proofs.
 
 ## References
 
