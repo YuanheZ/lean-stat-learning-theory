@@ -1,5 +1,8 @@
 # Statistical Learning Theory in Lean 4: Empirical Processes from Scratch
-[![arXiv](https://img.shields.io/badge/arXiv-2602.02285-b31b1b.svg)](https://arxiv.org/abs/2602.02285)
+<p align="center">
+  <a href="https://huggingface.co/collections/liminho123/statistical-learning-theory-in-lean-4"><img src="https://img.shields.io/badge/🤗-Model-yellow?style=for-the-badge" alt="Dataset"></a>
+  <a href="https://arxiv.org/abs/2602.02285"><img src="https://img.shields.io/badge/arXiv-Paper-red?style=for-the-badge" alt="Paper"></a>
+</p>
 
 ## Abstract
 We present the first comprehensive Lean 4 formalization of statistical learning theory (SLT) grounded in empirical process theory. Our end-to-end formal infrastructure implement the missing contents in latest Lean library, including a complete development of Gaussian Lipschitz concentration, the first formalization of Dudley’s entropy integral theorem for sub-Gaussian processes, and an application to least-squares regression with a sharp rate. The project was carried out using a human–AI collaborative workflow, in which humans design proof strategies and AI agents execute tactical proof construction, resulting in approximately 30,000 lines of human-verified Lean 4 code produced over 500 hours of supervised development. Beyond implementation, the formalization process exposes and resolves implicit assumptions and missing details in standard SLT textbooks, enforcing a granular, line-by-line understanding of the theory. This work establishes a reusable formal foundation for future developments in machine learning theory.
