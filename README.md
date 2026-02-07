@@ -96,7 +96,7 @@ We release a high-quality Lean 4 training dataset for LLM's formal reasoning —
 
 ## Recipe for Vibe Formalization
 
-We provide a practical recipe for human–AI collaborative formalization in Lean 4, distilled from our experience producing ~30,000 lines of verified code with Claude Code (`Claude-Opus-4.5`). The full guide and example prompts live in [`vibe-recipe/`](./vibe-recipe/).
+We provide a practical recipe for human–AI collaborative formalization in Lean 4, distilled from our experience producing ~30,000 lines of human-verified code with Claude Code (`Claude-Opus-4.5`). The full guide and example prompts live in [`vibe-recipe/`](./vibe-recipe/).
 
 **Workflow at a glance.** The process follows four iterative steps:
 
