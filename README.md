@@ -4,6 +4,17 @@
   <a href="https://huggingface.co/collections/liminho123/statistical-learning-theory-in-lean-4"><img src="https://img.shields.io/badge/🤗-Dataset-yellow?style=for-the-badge" alt="Dataset"></a>
 </p>
 
+## Table of Contents
+
+- [Abstract](#abstract)
+- [Implementation Roadmap](#implementation-roadmap)
+- [How to Run](#how-to-run)
+- [Major Results](#major-results)
+- [Dataset](#dataset)
+- [Recipe for Vibe Formalization](#recipe-for-vibe-formalization)
+- [References](#references)
+- [Acknowledgement](#acknowledgement)
+
 ## Abstract
 We present the first comprehensive Lean 4 formalization of statistical learning theory (SLT) grounded in empirical process theory. Our end-to-end formal infrastructure implement the missing contents in latest Lean library, including a complete development of Gaussian Lipschitz concentration, the first formalization of Dudley’s entropy integral theorem for sub-Gaussian processes, and an application to least-squares regression with a sharp rate. The project was carried out using a human–AI collaborative workflow, in which humans design proof strategies and AI agents execute tactical proof construction, resulting in approximately 30,000 lines of human-verified Lean 4 code produced over 500 hours of supervised development. Beyond implementation, the formalization process exposes and resolves implicit assumptions and missing details in standard SLT textbooks, enforcing a granular, line-by-line understanding of the theory. This work establishes a reusable formal foundation for future developments in machine learning theory.
 
@@ -85,7 +96,19 @@ We release a high-quality Lean 4 training dataset for LLM's formal reasoning —
 
 ## Recipe for Vibe Formalization
 
+We provide a practical recipe for human–AI collaborative formalization in Lean 4, distilled from our experience producing ~30,000 lines of verified code with Claude Code (`Claude-Opus-4.5`). The full guide and example prompts live in [`vibe-recipe/`](./vibe-recipe/).
 
+**Workflow at a glance.** The process follows four iterative steps:
+
+1. **Decompose proofs into small lemmas.** Each lemma should be completable within a single agent context window (~300 lines) without auto-compaction. Small units increase the agent's effective thinking budget, reduce the risk of context overflow, and improve modularity.
+
+2. **Design high-quality prompts.** Supply the agent with (a) signatures of possibly-needed project-local declarations obtained via the file outline MCP tool—*never* full file contents, which quickly fill the context window and cause hallucinations—and (b) a well-written mathematical proof to formalize. Mathlib declarations can be discovered on-the-fly through Lean search MCP tools. A worked example is given in [`vibe-recipe/EXAMPLE_INSTRUCTIONS.md`](./vibe-recipe/EXAMPLE_INSTRUCTIONS.md).
+
+3. **Clean compiler warnings.** Instruct the agent to eliminate all warnings, explicitly directing it to *remove* unused variables rather than masking them with `_` (a default preference of `Claude-Opus-4.5`).
+
+4. **Clean unused `have` statements.** Use the custom `#check_unused_have` metaprogram ([`vibe-recipe/UnusedHaveDetector.lean`](./vibe-recipe/UnusedHaveDetector.lean)) to detect and remove dead `have` bindings from proof terms. Repeat Steps 3–4 until both are clean.
+
+**Human-in-the-loop intervention.** A recurring failure mode we observe is that when the agent faces many simultaneous tactic errors in a long proof, it tends to abandon a largely correct proof structure in favor of drastic—and often incorrect—rewrites (e.g., *"Let me simplify the approach…"*). To counteract this, we instruct the agent: `DO NOT FREQUENTLY CHANGE PROOF. TRY TO FIX ERRORS ONE-BY-ONE.` This forces incremental error resolution, which surfaces structurally diagnostic errors that expose the true root cause rather than triggering wholesale re-proofs.
 
 ## References
 
