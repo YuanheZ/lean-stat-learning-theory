@@ -29,7 +29,7 @@ Benefits of small lemmas:
 
 ### Step 2: Design High-Quality Prompts
 
-The initial instructions for agents should include possibly-needed local declarations identified by human and a well-written proof for formalization. We provide an example in `EXAMPLE-INSTRUCTIONS.md`.
+The initial instructions for agents should include possibly-needed local declarations identified by human and a well-written proof for formalization. We provide an example in `EXAMPLE_INSTRUCTIONS.md`.
 
 For **project-local, pre-compiled declarations**:
 - Write only the signatures of possibly-needed declarations in your instructions
