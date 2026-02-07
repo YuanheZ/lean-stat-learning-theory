@@ -83,6 +83,10 @@ We release a high-quality Lean 4 training dataset for LLM's formal reasoning —
 - **Random**: Theorems are split randomly.
 - **Corpus**: 3,021 premises across 470 files (SLT library + referenced Mathlib/Lean4 stdlib declarations). Used for retrieval-augmented proving.
 
+## Recipe for Vibe Formalization
+
+
+
 ## References
 
 - Boucheron, S., Lugosi, G., & Massart, P. (2013). *Concentration Inequalities: A Nonasymptotic Theory of Independence*. Oxford University Press.
