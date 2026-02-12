@@ -2,8 +2,15 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amsthm,amssymb,mathtools}
 \usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{microtype}
 
-\title{NNGPResNet: Rigorous IID and Correlated-Layer Bounds with Lean Correspondence}
+\urlstyle{tt}
+\newcommand{\lean}[1]{{\small\path{#1}}}
+\setlength{\emergencystretch}{2em}
+
+
+\title{NNGPResNet: IID and Correlated-Layer Bounds}
 \author{Anthony Andiles}
 \date{\today}
 
@@ -145,7 +152,7 @@ If $m\ge 1$, then
 \]
 \end{lemma}
 \begin{proof}
-Let $B_2^m:=\{x\in\mathbb R^m:\|x|\le 1\}$. Since $S^{m-1}\subset B_2^m$, monotonicity of covering numbers gives
+Let $B_2^m:=\{x\in\mathbb R^m:\|x\|\le 1\}$. Since $S^{m-1}\subset B_2^m$, monotonicity of covering numbers gives
 \[
 N(S^{m-1},\varepsilon)\le N(B_2^m,\varepsilon).
 \]
@@ -455,87 +462,116 @@ By Theorem~\ref{thm:corr-scalar} with $u=e_i$,
 Union bound over $i=1,\dots,m$ gives the result.
 \end{proof}
 
+
+\section{Relation to Recent ArXiv Work}
+\subsection{Inverse-depth scaling and effective depth}
+The IID model yields $\operatorname{Var}(M_u)=1/L^2$ for $\|u\|=1$, reflecting both the ResNet scaling $1/\sqrt L$ in each layer increment and the explicit depth average $1/L$.
+The correlated model replaces $L^2$ by the effective depth
+$D_{\mathrm{eff}}=L^3/\rho_{\mathrm{sum}}$, which interpolates between $D_{\mathrm{eff}}=L^2$ (independent layers) and $D_{\mathrm{eff}}=L$ (perfectly correlated layers).
+This formalizes, in a Gaussian-process setting, the same qualitative mechanism proposed in \cite{liu2026inverse}: when most layers are functionally similar, depth behaves like averaging over fewer effectively independent contributions, producing inverse-depth-type scaling governed by an effective depth rather than the nominal depth.
+
+\subsection{Lean formalization of empirical-process tools}
+The sphere-process bounds in Theorems~\ref{thm:iid-t2-centered} and~\ref{thm:iid-t2-uncentered} are applications of Dudley’s entropy integral theorem for sub-Gaussian processes.
+The explicit Dudley constant $12\sqrt 2$ and the entropy-integral interface used here align with the Lean 4 empirical-process infrastructure developed in \cite{zhang2026sltlean}, which formalizes Dudley’s theorem for sub-Gaussian processes (and related Gaussian concentration tools) in Lean.
+The present note specializes these tools to the NNGPResNet sphere process and records a one-to-one correspondence with the concrete Lean declarations used in our development.
+
 \section{Lean Correspondence}
 Every mathematical object/theorem used above is matched below to the exact Lean declaration and file.
 
 \subsection*{IID model definitions and bridges}
 \begin{itemize}
-\item Residual width $rm=r m$: \verb|LeanSlt.NNGPResNet.residualWidth| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Sign activation $\operatorname{sign}$: \verb|LeanSlt.NNGPResNet.signAct| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Layer increment $\Delta h_\ell$: \verb|LeanSlt.NNGPResNet.DeltaH| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Layer probe $g_\ell(u)$: \verb|LeanSlt.NNGPResNet.g| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Depth average $M_u$: \verb|LeanSlt.NNGPResNet.M_u| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Averaged vector $W$: \verb|LeanSlt.NNGPResNet.W| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Sphere type $S^{m-1}$: \verb|LeanSlt.NNGPResNet.Sphere| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Process $X(u)=\langle u,W\rangle$: \verb|LeanSlt.NNGPResNet.X| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Bridge $M_u=X(u)$: \verb|LeanSlt.NNGPResNet.M_u_eq_X| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
-\item Bridge $M_u=\langle u,W\rangle$: \verb|LeanSlt.NNGPResNet.M_u_eq_inner_W| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Residual width $rm=r m$: \lean{LeanSlt.NNGPResNet.residualWidth} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Sign activation $\operatorname{sign}$: \lean{LeanSlt.NNGPResNet.signAct} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Layer increment $\Delta h_\ell$: \lean{LeanSlt.NNGPResNet.DeltaH} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Layer probe $g_\ell(u)$: \lean{LeanSlt.NNGPResNet.g} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Depth average $M_u$: \lean{LeanSlt.NNGPResNet.M_u} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Averaged vector $W$: \lean{LeanSlt.NNGPResNet.W} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Sphere type $S^{m-1}$: \lean{LeanSlt.NNGPResNet.Sphere} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Process $X(u)=\langle u,W\rangle$: \lean{LeanSlt.NNGPResNet.X} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Bridge $M_u=X(u)$: \lean{LeanSlt.NNGPResNet.M_u_eq_X} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
+\item Bridge $M_u=\langle u,W\rangle$: \lean{LeanSlt.NNGPResNet.M_u_eq_inner_W} --- \lean{LeanSlt/NNGPResNet/Defs.lean}
 \end{itemize}
 
 \subsection*{IID scalar results (T1)}
 \begin{itemize}
-\item Gaussian law: \verb|LeanSlt.NNGPResNet.scalar_mean_map_gaussian| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
-\item Tail bound: \verb|LeanSlt.NNGPResNet.scalar_mean_tail| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
-\item Second moment: \verb|LeanSlt.NNGPResNet.scalar_mean_mse| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
+\item Gaussian law: \lean{LeanSlt.NNGPResNet.scalar_mean_map_gaussian} --- \lean{LeanSlt/NNGPResNet/Scalar.lean}
+\item Tail bound: \lean{LeanSlt.NNGPResNet.scalar_mean_tail} --- \lean{LeanSlt/NNGPResNet/Scalar.lean}
+\item Second moment: \lean{LeanSlt.NNGPResNet.scalar_mean_mse} --- \lean{LeanSlt/NNGPResNet/Scalar.lean}
 \end{itemize}
 
 \subsection*{IID sphere process, entropy, Dudley, high probability (T2/T3)}
 \begin{itemize}
-\item Sphere set and subtype bridge: \verb|sphereSet|, \verb|SphereSetSub|, \verb|sphereEquivSphereSetSub| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Increment Gaussian law: \verb|LeanSlt.NNGPResNet.map_X_diff_gaussian| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Sub-Gaussian process instance: \verb|LeanSlt.NNGPResNet.sphere_process_isSubGaussian| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Sphere entropy finiteness: \verb|LeanSlt.NNGPResNet.entropyIntegralENNReal_sphere_ne_top| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Sphere entropy bound $\le 4\sqrt m$: \verb|LeanSlt.NNGPResNet.entropyIntegral_sphere_le| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Dudley intermediate bound: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_entropy| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Entropy-assuming intermediate theorem: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_assuming_entropy| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Final unconditional IID-T2 theorem: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Coordinate bridge: \verb|LeanSlt.NNGPResNet.W_coord_eq_M_u_single| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Supremum event reduction to coordinates: \verb|LeanSlt.NNGPResNet.sphere_sup_event_subset_union_coords| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Integrability and positivity helpers used in T3 proof path: \verb|LeanSlt.NNGPResNet.integrable_supX|, \verb|LeanSlt.NNGPResNet.supX_nonneg| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
-\item Final IID-T3 theorem: \verb|LeanSlt.NNGPResNet.sphere_process_highProb_bound| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Sphere set and subtype bridge: \lean{sphereSet}, \lean{SphereSetSub}, \lean{sphereEquivSphereSetSub} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Increment Gaussian law: \lean{LeanSlt.NNGPResNet.map_X_diff_gaussian} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Sub-Gaussian process instance: \lean{LeanSlt.NNGPResNet.sphere_process_isSubGaussian} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Sphere entropy finiteness: \lean{LeanSlt.NNGPResNet.entropyIntegralENNReal_sphere_ne_top} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Sphere entropy bound $\le 4\sqrt m$: \lean{LeanSlt.NNGPResNet.entropyIntegral_sphere_le} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Dudley intermediate bound: \lean{LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_entropy} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Entropy-assuming intermediate theorem: \lean{LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_assuming_entropy} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Final unconditional IID-T2 theorem: \lean{LeanSlt.NNGPResNet.sphere_process_expected_sup_bound} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Coordinate bridge: \lean{LeanSlt.NNGPResNet.W_coord_eq_M_u_single} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Supremum event reduction to coordinates: \lean{LeanSlt.NNGPResNet.sphere_sup_event_subset_union_coords} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Integrability and positivity helpers used in T3 proof path: \lean{LeanSlt.NNGPResNet.integrable_supX}, \lean{LeanSlt.NNGPResNet.supX_nonneg} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
+\item Final IID-T3 theorem: \lean{LeanSlt.NNGPResNet.sphere_process_highProb_bound} --- \lean{LeanSlt/NNGPResNet/SphereChaining.lean}
 \end{itemize}
 
 \subsection*{Correlated definitions and effective depth}
 \begin{itemize}
-\item Correlation kernel $\rho$: \verb|LeanSlt.NNGPResNet.Correlated.rho| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Correlation sum $\rho_{sum}$: \verb|LeanSlt.NNGPResNet.Correlated.rhoSum| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Inverse effective depth $\rho_{sum}/L^3$: \verb|LeanSlt.NNGPResNet.Correlated.invDEff| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Effective depth $L^3/\rho_{sum}$: \verb|LeanSlt.NNGPResNet.Correlated.D_eff| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Layer probe $g_\ell^{corr}$: \verb|LeanSlt.NNGPResNet.Correlated.gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Layer-average statistic: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Flattened statistic: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Bridge lemma: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg_eq_M_u_corr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
-\item Correlated averaged vector and process: \verb|LeanSlt.NNGPResNet.Correlated.Wcorr|, \verb|LeanSlt.NNGPResNet.Correlated.XCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Correlation kernel $\rho$: \lean{LeanSlt.NNGPResNet.Correlated.rho} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Correlation sum $\rho_{sum}$: \lean{LeanSlt.NNGPResNet.Correlated.rhoSum} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Inverse effective depth $\rho_{sum}/L^3$: \lean{LeanSlt.NNGPResNet.Correlated.invDEff} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Effective depth $L^3/\rho_{sum}$: \lean{LeanSlt.NNGPResNet.Correlated.D_eff} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Layer probe $g_\ell^{corr}$: \lean{LeanSlt.NNGPResNet.Correlated.gCorr} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Layer-average statistic: \lean{LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Flattened statistic: \lean{LeanSlt.NNGPResNet.Correlated.M_u_corr} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Bridge lemma: \lean{LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg_eq_M_u_corr} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
+\item Correlated averaged vector and process: \lean{LeanSlt.NNGPResNet.Correlated.Wcorr}, \lean{LeanSlt.NNGPResNet.Correlated.XCorr} --- \lean{LeanSlt/NNGPResNet/Correlated/Defs.lean}
 \end{itemize}
 
 \subsection*{Correlated covariance/variance/scalar results}
 \begin{itemize}
-\item Single-layer Gaussian map: \verb|LeanSlt.NNGPResNet.Correlated.map_gCorr_gaussian_any| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
-\item Single-layer variance: \verb|LeanSlt.NNGPResNet.Correlated.variance_gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
-\item Variance of layer sum: \verb|LeanSlt.NNGPResNet.Correlated.variance_gCorr_add| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
-\item Covariance formula (CORR-COV): \verb|LeanSlt.NNGPResNet.Correlated.cov_gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
-\item Unit-vector Gaussian law (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_map_gaussian_unit_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
-\item Unit-vector tail (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_tail_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
-\item Unit-vector MSE (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_mse_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
-\item Variance from covariance sum: \verb|LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_covariance_sum| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
-\item Variance in explicit $\rho$-sum form: \verb|LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_rho_sum| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\item Single-layer Gaussian map: \lean{LeanSlt.NNGPResNet.Correlated.map_gCorr_gaussian_any} --- \lean{LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean}
+\item Single-layer variance: \lean{LeanSlt.NNGPResNet.Correlated.variance_gCorr} --- \lean{LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean}
+\item Variance of layer sum: \lean{LeanSlt.NNGPResNet.Correlated.variance_gCorr_add} --- \lean{LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean}
+\item Covariance formula (CORR-COV): \lean{LeanSlt.NNGPResNet.Correlated.cov_gCorr} --- \lean{LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean}
+\item Unit-vector Gaussian law (layerAvg): \lean{LeanSlt.NNGPResNet.Correlated.corr_scalar_map_gaussian_unit_layerAvg} --- \lean{LeanSlt/NNGPResNet/Correlated/Scalar.lean}
+\item Unit-vector tail (layerAvg): \lean{LeanSlt.NNGPResNet.Correlated.corr_scalar_tail_layerAvg} --- \lean{LeanSlt/NNGPResNet/Correlated/Scalar.lean}
+\item Unit-vector MSE (layerAvg): \lean{LeanSlt.NNGPResNet.Correlated.corr_scalar_mse_layerAvg} --- \lean{LeanSlt/NNGPResNet/Correlated/Scalar.lean}
+\item Variance from covariance sum: \lean{LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_covariance_sum} --- \lean{LeanSlt/NNGPResNet/Correlated/Scalar.lean}
+\item Variance in explicit $\rho$-sum form: \lean{LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_rho_sum} --- \lean{LeanSlt/NNGPResNet/Correlated/Scalar.lean}
 \end{itemize}
 
 \subsection*{Correlated chaining and high-probability supremum}
 \begin{itemize}
-\item Centered correlated process: \verb|LeanSlt.NNGPResNet.Correlated.centeredCorrProcess| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
-\item Correlated Dudley entropy form: \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_entropy| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
-\item Correlated expected sup bound (flat form): \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
-\item Correlated expected sup bound (layerAvg form): \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
-\item Coordinate bridge for correlated process: \verb|LeanSlt.NNGPResNet.Correlated.Wcorr_coord_eq_M_u_corr_single| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
-\item Final correlated high-probability theorem: \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_highProb_bound| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Centered correlated process: \lean{LeanSlt.NNGPResNet.Correlated.centeredCorrProcess} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
+\item Correlated Dudley entropy form: \lean{LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_entropy} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
+\item Correlated expected sup bound (flat form): \lean{LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
+\item Correlated expected sup bound (layerAvg form): \lean{LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_layerAvg} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
+\item Coordinate bridge for correlated process: \lean{LeanSlt.NNGPResNet.Correlated.Wcorr_coord_eq_M_u_corr_single} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
+\item Final correlated high-probability theorem: \lean{LeanSlt.NNGPResNet.Correlated.corr_sphere_highProb_bound} --- \lean{LeanSlt/NNGPResNet/Correlated/SphereChaining.lean}
 \end{itemize}
 
 \subsection*{Module aggregators}
 \begin{itemize}
-\item IID exports: \verb|LeanSlt.NNGPResNet.Main| --- \verb|LeanSlt/NNGPResNet/Main.lean|
-\item Correlated exports: \verb|LeanSlt.NNGPResNet.Correlated.Main| --- \verb|LeanSlt/NNGPResNet/Correlated/Main.lean|
-\item Top-level import hook: \verb|LeanSlt.lean|.
+\item IID exports: \lean{LeanSlt.NNGPResNet.Main} --- \lean{LeanSlt/NNGPResNet/Main.lean}
+\item Correlated exports: \lean{LeanSlt.NNGPResNet.Correlated.Main} --- \lean{LeanSlt/NNGPResNet/Correlated/Main.lean}
+\item Top-level import hook: \lean{LeanSlt.lean}.
 \end{itemize}
+
+
+\begin{thebibliography}{99}
+
+\bibitem{liu2026inverse}
+Y.~Liu, S.~Kangaslahti, Z.~Liu, and J.~Gore.
+\newblock Inverse depth scaling from most layers being similar.
+\newblock \emph{arXiv preprint arXiv:2602.05970}, 2026.
+
+\bibitem{zhang2026sltlean}
+Y.~Zhang, J.~D. Lee, and F.~Liu.
+\newblock Statistical learning theory in Lean~4: empirical processes from scratch.
+\newblock \emph{arXiv preprint arXiv:2602.02285}, 2026.
+
+\end{thebibliography}
+
 
 \end{document}
