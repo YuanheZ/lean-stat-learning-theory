@@ -1,0 +1,541 @@
+﻿\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb,mathtools}
+\usepackage{hyperref}
+
+\title{NNGPResNet: Rigorous IID and Correlated-Layer Bounds with Lean Correspondence}
+\author{Anthony Andiles}
+\date{\today}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note gives complete mathematical proofs for the IID and correlated NNGPResNet results formalized in Lean. All constants are chosen to match the Lean theorems. A final section maps every definition and theorem in this note to the exact Lean declaration and file path.
+\end{abstract}
+
+\section{Setup and Notation}
+Fix integers $m,r,L\in\mathbb N$ with $L\ge 1$, $m\ge 1$, and define $rm:=r m$.
+For $x\in\mathbb R$, define $\operatorname{sign}(x)=1$ if $x\ge 0$, and $-1$ if $x<0$.
+For vectors, $\langle\cdot,\cdot\rangle$ is the Euclidean inner product and $\|\cdot\|$ is the Euclidean norm.
+The unit sphere is
+\[
+S^{m-1}:=\{u\in\mathbb R^m:\|u\|=1\}.
+\]
+
+For a centered Gaussian random variable $G\sim\mathcal N(0,\sigma^2)$ we use:
+\[
+\mathbb P(|G|\ge t)\le 2\exp\!\left(-\frac{t^2}{2\sigma^2}\right),\qquad
+\mathbb E[G^2]=\sigma^2.
+\]
+
+\section{IID NNGP Model}
+\subsection{Model definition}
+For each $\ell\in\{1,\dots,L\}$, $i\in\{1,\dots,m\}$, $j\in\{1,\dots,rm\}$:
+\begin{itemize}
+\item $B_{\ell i j}\sim\mathcal N(0,1)$ i.i.d.,
+\item $z_{\ell j}\sim\mathcal N(0,1)$ i.i.d., independent of all $B$,
+\item $a_{\ell j}:=\operatorname{sign}(z_{\ell j})\in\{\pm 1\}$.
+\end{itemize}
+Define layer increment and probes:
+\[
+\Delta h_\ell(i):=\frac{1}{\sqrt L}\frac{1}{\sqrt{rm}}\sum_{j=1}^{rm} B_{\ell i j}a_{\ell j},
+\quad
+ g_\ell(u):=\langle u,\Delta h_\ell\rangle,
+\]
+\[
+M_u:=\frac1L\sum_{\ell=1}^L g_\ell(u),
+\qquad
+W:=\frac1L\sum_{\ell=1}^L\Delta h_\ell,
+\qquad
+X(u):=\langle u,W\rangle.
+\]
+Clearly $X(u)=M_u$ for every $u$.
+
+\subsection{IID-T1: exact scalar law, tail, second moment}
+\begin{theorem}[IID-T1 Gaussian law]
+\label{thm:iid-t1-law}
+For each fixed $u\in S^{m-1}$,
+\[
+M_u\sim \mathcal N\!\left(0,\frac1{L^2}\right).
+\]
+\end{theorem}
+\begin{proof}
+Fix $u\in S^{m-1}$. For one layer $\ell$,
+\[
+g_\ell(u)=\frac1{\sqrt L\sqrt{rm}}\sum_{i=1}^m\sum_{j=1}^{rm}u_i a_{\ell j}B_{\ell i j}.
+\]
+Condition on $\{a_{\ell j}\}_{j=1}^{rm}$. Then $g_\ell(u)$ is a linear combination of independent centered Gaussians, hence Gaussian with mean $0$ and variance
+\[
+\operatorname{Var}(g_\ell(u)\mid a)=\frac1{Lrm}\sum_{i=1}^m\sum_{j=1}^{rm}u_i^2 a_{\ell j}^2
+=\frac1{Lrm}\left(\sum_{i=1}^m u_i^2\right)\left(\sum_{j=1}^{rm}1\right)=\frac{\|u\|^2}{L}=\frac1L.
+\]
+So unconditionally $g_\ell(u)\sim\mathcal N(0,1/L)$.
+For different $\ell$, variables $g_\ell(u)$ depend on disjoint Gaussian coordinates $(B_{\ell i j},z_{\ell j})$, so they are independent.
+Hence
+\[
+M_u=\frac1L\sum_{\ell=1}^L g_\ell(u)
+\]
+is centered Gaussian with variance
+\[
+\operatorname{Var}(M_u)=\frac1{L^2}\sum_{\ell=1}^L\operatorname{Var}(g_\ell(u))
+=\frac1{L^2}\cdot L\cdot\frac1L=\frac1{L^2}.
+\]
+Therefore $M_u\sim\mathcal N(0,1/L^2)$.
+\end{proof}
+
+\begin{corollary}[IID-T1 tail]
+\label{cor:iid-tail}
+For each $u\in S^{m-1}$ and each $t>0$,
+\[
+\mathbb P(|M_u|\ge t)\le 2\exp\!\left(-\frac{L^2 t^2}{2}\right).
+\]
+\end{corollary}
+\begin{proof}
+Apply the standard Gaussian tail inequality to Theorem~\ref{thm:iid-t1-law} with variance $\sigma^2=1/L^2$.
+\end{proof}
+
+\begin{corollary}[IID-T1 second moment]
+\label{cor:iid-mse}
+For each $u\in S^{m-1}$,
+\[
+\mathbb E[M_u^2]=\frac1{L^2}.
+\]
+\end{corollary}
+\begin{proof}
+A centered Gaussian has second moment equal to variance, and Theorem~\ref{thm:iid-t1-law} gives variance $1/L^2$.
+\end{proof}
+
+\subsection{IID-T2: expected supremum via Dudley}
+Fix $u_0\in S^{m-1}$ and define centered process
+\[
+\widetilde X(u):=X(u)-X(u_0),\qquad u\in S^{m-1}.
+\]
+
+\begin{lemma}[Increment metric]
+\label{lem:iid-metric}
+For all $u,v\in S^{m-1}$,
+\[
+X(u)-X(v)\sim\mathcal N\!\left(0,\frac{\|u-v\|^2}{L^2}\right),
+\]
+so the canonical metric is
+\[
+d(u,v):=\sqrt{\mathbb E[(X(u)-X(v))^2]}=\frac1L\|u-v\|.
+\]
+\end{lemma}
+\begin{proof}
+$X(u)-X(v)=M_{u-v}$. Repeating the computation in Theorem~\ref{thm:iid-t1-law} for a general vector $w\in\mathbb R^m$ gives
+$M_w\sim\mathcal N(0,\|w\|^2/L^2)$. Set $w=u-v$.
+\end{proof}
+
+\begin{lemma}[Entropy integral bound with explicit constant]
+\label{lem:entropy-bound}
+If $m\ge 1$, then
+\[
+\operatorname{EntInt}(S^{m-1},2):=\int_0^2\sqrt{\log N(S^{m-1},\varepsilon)}\,d\varepsilon
+\le 4\sqrt m.
+\]
+\end{lemma}
+\begin{proof}
+Let $B_2^m:=\{x\in\mathbb R^m:\|x|\le 1\}$. Since $S^{m-1}\subset B_2^m$, monotonicity of covering numbers gives
+\[
+N(S^{m-1},\varepsilon)\le N(B_2^m,\varepsilon).
+\]
+For $0<\varepsilon\le 2$, the standard volumetric estimate gives
+\[
+N(B_2^m,\varepsilon)\le\left(1+\frac2\varepsilon\right)^m\le\left(\frac3\varepsilon\right)^m.
+\]
+Hence
+\[
+\log N(S^{m-1},\varepsilon)\le m\log\!\left(\frac3\varepsilon\right)
+\]
+and therefore
+\[
+\operatorname{EntInt}(S^{m-1},2)
+\le \sqrt m\int_0^2\sqrt{\log\!\left(\frac3\varepsilon\right)}\,d\varepsilon.
+\]
+Set
+\[
+I:=\int_0^2\sqrt{\log\!\left(\frac3\varepsilon\right)}\,d\varepsilon.
+\]
+Use substitution $\varepsilon=3e^{-s}$, $d\varepsilon=-3e^{-s}ds$. As $\varepsilon\downarrow0$, $s\to\infty$; as $\varepsilon=2$, $s=\log(3/2)$. Thus
+\[
+I=3\int_{\log(3/2)}^{\infty}e^{-s}\sqrt s\,ds
+\le 3\int_0^{\infty}e^{-s}\sqrt s\,ds
+=3\,\Gamma\!\left(\frac32\right)=\frac{3\sqrt\pi}{2}<4.
+\]
+So $\operatorname{EntInt}(S^{m-1},2)\le 4\sqrt m$.
+\end{proof}
+
+\begin{theorem}[IID-T2 centered Dudley bound]
+\label{thm:iid-t2-centered}
+Assume $m\ge1$ and $L\ge1$. Then
+\[
+\mathbb E\Big[\sup_{u\in S^{m-1}}\widetilde X(u)\Big]
+\le (12\sqrt2)\frac1L\operatorname{EntInt}(S^{m-1},2)
+\le (48\sqrt2)\frac{\sqrt m}{L}.
+\]
+\end{theorem}
+\begin{proof}
+By Lemma~\ref{lem:iid-metric}, increments are sub-Gaussian with scale $1/L$ in Euclidean distance. Apply Dudley's theorem with the explicit constant $12\sqrt2$ used in the Lean development:
+\[
+\mathbb E\sup_{u\in S^{m-1}}\widetilde X(u)
+\le (12\sqrt2)\frac1L\operatorname{EntInt}(S^{m-1},2).
+\]
+Then use Lemma~\ref{lem:entropy-bound}.
+\end{proof}
+
+\begin{theorem}[IID-T2 uncentered bound]
+\label{thm:iid-t2-uncentered}
+Assume $m\ge1$ and $L\ge1$. Then
+\[
+\mathbb E\Big[\sup_{u\in S^{m-1}}X(u)\Big]
+\le (48\sqrt2)\frac{\sqrt m}{L}.
+\]
+\end{theorem}
+\begin{proof}
+For every sample,
+\[
+\sup_{u\in S^{m-1}}X(u)=\sup_{u\in S^{m-1}}(X(u)-X(u_0))+X(u_0)
+\]
+because adding the constant $-X(u_0)$ shifts all values equally.
+Integrate both sides:
+\[
+\mathbb E\sup_u X(u)=\mathbb E\sup_u\widetilde X(u)+\mathbb E[X(u_0)].
+\]
+By Theorem~\ref{thm:iid-t1-law} with unit vector $u_0$, $X(u_0)=M_{u_0}\sim\mathcal N(0,1/L^2)$, so $\mathbb E[X(u_0)]=0$.
+Hence
+\[
+\mathbb E\sup_u X(u)=\mathbb E\sup_u\widetilde X(u)
+\le (48\sqrt2)\frac{\sqrt m}{L}
+\]
+by Theorem~\ref{thm:iid-t2-centered}.
+\end{proof}
+
+\subsection{IID-T3: high-probability supremum bound (Lean-exported form)}
+\begin{theorem}[IID-T3]
+\label{thm:iid-t3}
+Assume $m\ge1$, $L\ge1$, and $t>0$. Then
+\[
+\mathbb P\!\left(\mathbb E\sup_{u\in S^{m-1}}X(u)+t\le \sup_{u\in S^{m-1}}X(u)\right)
+\le 2m\exp\!\left(-\frac{L^2}{2}\left(\frac{t}{\sqrt m}\right)^2\right).
+\]
+\end{theorem}
+\begin{proof}
+Let $S(\omega):=\sup_{u\in S^{m-1}}X(u,\omega)$. Since $-u\in S^{m-1}$ whenever $u\in S^{m-1}$,
+\[
+S(\omega)=\sup_{u\in S^{m-1}}\langle u,W(\omega)\rangle\ge 0,
+\]
+so $\mathbb E[S]\ge0$. Therefore
+\[
+\{\mathbb E[S]+t\le S\}\subseteq \{t\le S\}.
+\]
+Now prove
+\[
+\{t\le S\}\subseteq \bigcup_{i=1}^m\left\{\,|W_i|\ge \frac{t}{\sqrt m}\,\right\}.
+\]
+Indeed, if all coordinates satisfy $|W_i|<t/\sqrt m$, then
+\[
+\|W\|^2=\sum_{i=1}^m W_i^2 < m\cdot\frac{t^2}{m}=t^2,
+\]
+so $\|W\|<t$. Then for any unit $u$,
+\[
+X(u)=\langle u,W\rangle\le \|u\|\,\|W\|=\|W\|<t,
+\]
+thus $S<t$, contradiction.
+Hence by union bound,
+\[
+\mathbb P(t\le S)
+\le \sum_{i=1}^m\mathbb P\!\left(|W_i|\ge\frac{t}{\sqrt m}\right).
+\]
+For each coordinate basis vector $e_i\in S^{m-1}$, $W_i=M_{e_i}$, so by Corollary~\ref{cor:iid-tail},
+\[
+\mathbb P\!\left(|W_i|\ge\frac{t}{\sqrt m}\right)
+\le 2\exp\!\left(-\frac{L^2}{2}\left(\frac{t}{\sqrt m}\right)^2\right).
+\]
+Summing over $i=1,\dots,m$ gives the claimed bound.
+\end{proof}
+
+\section{Correlated-Layer Model and Effective Depth}
+\subsection{Model definition}
+Fix $A\in\mathbb R^{L\times L}$ and define
+\[
+\rho(\ell,k):=\sum_{t=1}^L A_{\ell t}A_{k t},
+\qquad
+\rho_{\mathrm{sum}}:=\sum_{\ell=1}^L\sum_{k=1}^L\rho(\ell,k),
+\]
+\[
+\operatorname{invDEff}:=\frac{\rho_{\mathrm{sum}}}{L^3},
+\qquad
+D_{\mathrm{eff}}:=\frac{L^3}{\rho_{\mathrm{sum}}}
+\quad(\rho_{\mathrm{sum}}>0).
+\]
+
+Randomness in the Lean model:
+\begin{itemize}
+\item Latent field $Z_{t i j}\sim\mathcal N(0,1)$ i.i.d. over $(t,i,j)$,
+\item Shared activation Gaussian $z_j\sim\mathcal N(0,1)$ i.i.d. over $j$,
+\item $a_j:=\operatorname{sign}(z_j)$ is shared across layers.
+\end{itemize}
+Define correlated weights and probes:
+\[
+B_{\ell i j}:=\sum_{t=1}^L A_{\ell t} Z_{t i j},
+\]
+\[
+\Delta h_\ell(i):=\frac1{\sqrt L\sqrt{rm}}\sum_{j=1}^{rm}B_{\ell i j}a_j,
+\qquad
+g_\ell(u):=\langle u,\Delta h_\ell\rangle,
+\]
+\[
+M_u^{\mathrm{layerAvg}}:=\frac1L\sum_{\ell=1}^L g_\ell(u).
+\]
+The Lean development also uses a flattened linear-form version $M_u^{\mathrm{flat}}$ and proves
+\[
+M_u^{\mathrm{layerAvg}}=M_u^{\mathrm{flat}}.
+\]
+
+\subsection{CORR-COV and CORR-VAR}
+\begin{theorem}[CORR-COV]
+\label{thm:corr-cov}
+For every $u\in\mathbb R^m$ and $\ell,k\in\{1,\dots,L\}$,
+\[
+\operatorname{Cov}(g_\ell(u),g_k(u))
+=\frac{\rho(\ell,k)}{L}\,\|u\|^2.
+\]
+\end{theorem}
+\begin{proof}
+The Lean development proves the exact variance identities
+\[
+\operatorname{Var}(g_\ell(u))=\frac{\rho(\ell,\ell)}{L}\|u\|^2,
+\]
+\[
+\operatorname{Var}(g_\ell(u)+g_k(u))
+=\frac{\rho(\ell,\ell)+\rho(k,k)+2\rho(\ell,k)}{L}\|u\|^2.
+\]
+Now use
+\[
+\operatorname{Cov}(X,Y)=\frac{\operatorname{Var}(X+Y)-\operatorname{Var}(X)-\operatorname{Var}(Y)}{2}
+\]
+with $X=g_\ell(u)$, $Y=g_k(u)$ to obtain
+\[
+\operatorname{Cov}(g_\ell(u),g_k(u))
+=\frac1{2L}\left(\rho(\ell,\ell)+\rho(k,k)+2\rho(\ell,k)-\rho(\ell,\ell)-\rho(k,k)\right)\|u\|^2
+=\frac{\rho(\ell,k)}{L}\|u\|^2.
+\]
+\end{proof}
+
+\begin{theorem}[CORR-VAR: covariance-sum identity]
+\label{thm:corr-var-covsum}
+For every $u\in\mathbb R^m$,
+\[
+\operatorname{Var}(M_u^{\mathrm{layerAvg}})
+=\frac1{L^2}\sum_{\ell=1}^L\sum_{k=1}^L\operatorname{Cov}(g_\ell(u),g_k(u)).
+\]
+Hence,
+\[
+\operatorname{Var}(M_u^{\mathrm{layerAvg}})
+=\frac{\|u\|^2\rho_{\mathrm{sum}}}{L^3}
+=\frac{\|u\|^2}{D_{\mathrm{eff}}}
+\quad(\rho_{\mathrm{sum}}>0).
+\]
+\end{theorem}
+\begin{proof}
+Since $M_u^{\mathrm{layerAvg}}=(1/L)\sum_\ell g_\ell(u)$,
+\[
+\operatorname{Var}(M_u^{\mathrm{layerAvg}})
+=\operatorname{Var}\!\left(\frac1L\sum_\ell g_\ell(u)\right)
+=\frac1{L^2}\sum_{\ell,k}\operatorname{Cov}(g_\ell(u),g_k(u)).
+\]
+Substitute Theorem~\ref{thm:corr-cov}:
+\[
+\operatorname{Var}(M_u^{\mathrm{layerAvg}})
+=\frac1{L^2}\sum_{\ell,k}\frac{\rho(\ell,k)}{L}\|u\|^2
+=\frac{\|u\|^2}{L^3}\sum_{\ell,k}\rho(\ell,k)
+=\frac{\|u\|^2\rho_{\mathrm{sum}}}{L^3}.
+\]
+If $\rho_{\mathrm{sum}}>0$, then $D_{\mathrm{eff}}=L^3/\rho_{\mathrm{sum}}$, so
+\[
+\frac{\|u\|^2\rho_{\mathrm{sum}}}{L^3}=\frac{\|u\|^2}{D_{\mathrm{eff}}}.
+\]
+\end{proof}
+
+\begin{theorem}[Correlated scalar Gaussian law, tail, MSE for unit vectors]
+\label{thm:corr-scalar}
+Assume $u\in S^{m-1}$.
+Then
+\[
+M_u^{\mathrm{layerAvg}}\sim\mathcal N\!\left(0,\frac{\rho_{\mathrm{sum}}}{L^3}\right)
+=\mathcal N\!\left(0,\frac1{D_{\mathrm{eff}}}\right)
+\quad(\rho_{\mathrm{sum}}>0),
+\]
+\[
+\mathbb P\left(|M_u^{\mathrm{layerAvg}}|\ge t\right)
+\le 2\exp\!\left(-\frac{t^2D_{\mathrm{eff}}}{2}\right),\qquad t>0,
+\]
+\[
+\mathbb E\left[(M_u^{\mathrm{layerAvg}})^2\right]=\frac{\rho_{\mathrm{sum}}}{L^3}=\frac1{D_{\mathrm{eff}}}.
+\]
+\end{theorem}
+\begin{proof}
+The process $M_u^{\mathrm{flat}}$ is a finite linear form in independent Gaussian coordinates; therefore it is centered Gaussian with variance $\|u\|^2\rho_{\mathrm{sum}}/L^3$.
+Using $\|u\|=1$ and the bridge $M_u^{\mathrm{layerAvg}}=M_u^{\mathrm{flat}}$ gives the law.
+The tail and second moment are the standard centered Gaussian formulas with variance $\rho_{\mathrm{sum}}/L^3$; when $\rho_{\mathrm{sum}}>0$, rewrite as $1/D_{\mathrm{eff}}$.
+\end{proof}
+
+\subsection{CORR-T2: expected supremum via Dudley}
+Define $X_{\mathrm{corr}}(u):=M_u^{\mathrm{layerAvg}}$ and centered process
+\[
+\widetilde X_{\mathrm{corr}}(u):=X_{\mathrm{corr}}(u)-X_{\mathrm{corr}}(u_0),\qquad u\in S^{m-1}.
+\]
+
+\begin{theorem}[CORR-T2]
+\label{thm:corr-t2}
+Assume $m\ge1$, $L\ge1$, and $\rho_{\mathrm{sum}}>0$. Then
+\[
+\mathbb E\sup_{u\in S^{m-1}}\widetilde X_{\mathrm{corr}}(u)
+\le (48\sqrt2)\frac{\sqrt m}{\sqrt{D_{\mathrm{eff}}}}.
+\]
+\end{theorem}
+\begin{proof}
+From the correlated increment law in Lean, increments are sub-Gaussian with metric
+\[
+d_{\mathrm{corr}}(u,v)=\sqrt{\operatorname{invDEff}}\,\|u-v\|=
+\frac{\|u-v\|}{\sqrt{D_{\mathrm{eff}}}}.
+\]
+Applying Dudley with constant $12\sqrt2$ gives
+\[
+\mathbb E\sup_u\widetilde X_{\mathrm{corr}}(u)
+\le (12\sqrt2)\sqrt{\operatorname{invDEff}}\,\operatorname{EntInt}(S^{m-1},2).
+\]
+By Lemma~\ref{lem:entropy-bound},
+\[
+\mathbb E\sup_u\widetilde X_{\mathrm{corr}}(u)
+\le (12\sqrt2)\sqrt{\operatorname{invDEff}}\cdot 4\sqrt m
+= (48\sqrt2)\frac{\sqrt m}{\sqrt{D_{\mathrm{eff}}}}.
+\]
+\end{proof}
+
+\subsection{CORR-T3: high-probability supremum tail (Lean-exported form)}
+\begin{theorem}[CORR-T3]
+\label{thm:corr-t3}
+Assume $m\ge1$, $L\ge1$, $\rho_{\mathrm{sum}}>0$, and $t>0$. Then
+\[
+\mathbb P\!\left(t\le \sup_{u\in S^{m-1}}X_{\mathrm{corr}}(u)\right)
+\le 2m\exp\!\left(-\frac{(t/m)^2D_{\mathrm{eff}}}{2}\right).
+\]
+\end{theorem}
+\begin{proof}
+Write $X_{\mathrm{corr}}(u)=\langle u,W_{\mathrm{corr}}\rangle$.
+If
+$|W_{\mathrm{corr},i}|<t/m$ for all $i$, then
+\[
+\sup_{u\in S^{m-1}}X_{\mathrm{corr}}(u)
+\le \sum_{i=1}^m |W_{\mathrm{corr},i}|<m\cdot (t/m)=t,
+\]
+so
+\[
+\left\{t\le \sup_u X_{\mathrm{corr}}(u)\right\}
+\subseteq \bigcup_{i=1}^m\left\{|W_{\mathrm{corr},i}|\ge t/m\right\}.
+\]
+For each coordinate basis vector $e_i$, Lean proves
+$W_{\mathrm{corr},i}=M_{e_i}^{\mathrm{flat}}$.
+By Theorem~\ref{thm:corr-scalar} with $u=e_i$,
+\[
+\mathbb P\left(|W_{\mathrm{corr},i}|\ge t/m\right)
+\le 2\exp\!\left(-\frac{(t/m)^2D_{\mathrm{eff}}}{2}\right).
+\]
+Union bound over $i=1,\dots,m$ gives the result.
+\end{proof}
+
+\section{Lean Correspondence}
+Every mathematical object/theorem used above is matched below to the exact Lean declaration and file.
+
+\subsection*{IID model definitions and bridges}
+\begin{itemize}
+\item Residual width $rm=r m$: \verb|LeanSlt.NNGPResNet.residualWidth| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Sign activation $\operatorname{sign}$: \verb|LeanSlt.NNGPResNet.signAct| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Layer increment $\Delta h_\ell$: \verb|LeanSlt.NNGPResNet.DeltaH| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Layer probe $g_\ell(u)$: \verb|LeanSlt.NNGPResNet.g| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Depth average $M_u$: \verb|LeanSlt.NNGPResNet.M_u| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Averaged vector $W$: \verb|LeanSlt.NNGPResNet.W| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Sphere type $S^{m-1}$: \verb|LeanSlt.NNGPResNet.Sphere| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Process $X(u)=\langle u,W\rangle$: \verb|LeanSlt.NNGPResNet.X| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Bridge $M_u=X(u)$: \verb|LeanSlt.NNGPResNet.M_u_eq_X| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\item Bridge $M_u=\langle u,W\rangle$: \verb|LeanSlt.NNGPResNet.M_u_eq_inner_W| --- \verb|LeanSlt/NNGPResNet/Defs.lean|
+\end{itemize}
+
+\subsection*{IID scalar results (T1)}
+\begin{itemize}
+\item Gaussian law: \verb|LeanSlt.NNGPResNet.scalar_mean_map_gaussian| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
+\item Tail bound: \verb|LeanSlt.NNGPResNet.scalar_mean_tail| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
+\item Second moment: \verb|LeanSlt.NNGPResNet.scalar_mean_mse| --- \verb|LeanSlt/NNGPResNet/Scalar.lean|
+\end{itemize}
+
+\subsection*{IID sphere process, entropy, Dudley, high probability (T2/T3)}
+\begin{itemize}
+\item Sphere set and subtype bridge: \verb|sphereSet|, \verb|SphereSetSub|, \verb|sphereEquivSphereSetSub| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Increment Gaussian law: \verb|LeanSlt.NNGPResNet.map_X_diff_gaussian| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Sub-Gaussian process instance: \verb|LeanSlt.NNGPResNet.sphere_process_isSubGaussian| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Sphere entropy finiteness: \verb|LeanSlt.NNGPResNet.entropyIntegralENNReal_sphere_ne_top| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Sphere entropy bound $\le 4\sqrt m$: \verb|LeanSlt.NNGPResNet.entropyIntegral_sphere_le| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Dudley intermediate bound: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_entropy| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Entropy-assuming intermediate theorem: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound_assuming_entropy| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Final unconditional IID-T2 theorem: \verb|LeanSlt.NNGPResNet.sphere_process_expected_sup_bound| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Coordinate bridge: \verb|LeanSlt.NNGPResNet.W_coord_eq_M_u_single| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Supremum event reduction to coordinates: \verb|LeanSlt.NNGPResNet.sphere_sup_event_subset_union_coords| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Integrability and positivity helpers used in T3 proof path: \verb|LeanSlt.NNGPResNet.integrable_supX|, \verb|LeanSlt.NNGPResNet.supX_nonneg| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\item Final IID-T3 theorem: \verb|LeanSlt.NNGPResNet.sphere_process_highProb_bound| --- \verb|LeanSlt/NNGPResNet/SphereChaining.lean|
+\end{itemize}
+
+\subsection*{Correlated definitions and effective depth}
+\begin{itemize}
+\item Correlation kernel $\rho$: \verb|LeanSlt.NNGPResNet.Correlated.rho| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Correlation sum $\rho_{sum}$: \verb|LeanSlt.NNGPResNet.Correlated.rhoSum| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Inverse effective depth $\rho_{sum}/L^3$: \verb|LeanSlt.NNGPResNet.Correlated.invDEff| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Effective depth $L^3/\rho_{sum}$: \verb|LeanSlt.NNGPResNet.Correlated.D_eff| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Layer probe $g_\ell^{corr}$: \verb|LeanSlt.NNGPResNet.Correlated.gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Layer-average statistic: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Flattened statistic: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Bridge lemma: \verb|LeanSlt.NNGPResNet.Correlated.M_u_corr_layerAvg_eq_M_u_corr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\item Correlated averaged vector and process: \verb|LeanSlt.NNGPResNet.Correlated.Wcorr|, \verb|LeanSlt.NNGPResNet.Correlated.XCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/Defs.lean|
+\end{itemize}
+
+\subsection*{Correlated covariance/variance/scalar results}
+\begin{itemize}
+\item Single-layer Gaussian map: \verb|LeanSlt.NNGPResNet.Correlated.map_gCorr_gaussian_any| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
+\item Single-layer variance: \verb|LeanSlt.NNGPResNet.Correlated.variance_gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
+\item Variance of layer sum: \verb|LeanSlt.NNGPResNet.Correlated.variance_gCorr_add| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
+\item Covariance formula (CORR-COV): \verb|LeanSlt.NNGPResNet.Correlated.cov_gCorr| --- \verb|LeanSlt/NNGPResNet/Correlated/GaussianLinearForms.lean|
+\item Unit-vector Gaussian law (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_map_gaussian_unit_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\item Unit-vector tail (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_tail_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\item Unit-vector MSE (layerAvg): \verb|LeanSlt.NNGPResNet.Correlated.corr_scalar_mse_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\item Variance from covariance sum: \verb|LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_covariance_sum| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\item Variance in explicit $\rho$-sum form: \verb|LeanSlt.NNGPResNet.Correlated.var_M_u_corr_layerAvg_as_rho_sum| --- \verb|LeanSlt/NNGPResNet/Correlated/Scalar.lean|
+\end{itemize}
+
+\subsection*{Correlated chaining and high-probability supremum}
+\begin{itemize}
+\item Centered correlated process: \verb|LeanSlt.NNGPResNet.Correlated.centeredCorrProcess| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Correlated Dudley entropy form: \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_entropy| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Correlated expected sup bound (flat form): \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Correlated expected sup bound (layerAvg form): \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_expected_sup_bound_layerAvg| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Coordinate bridge for correlated process: \verb|LeanSlt.NNGPResNet.Correlated.Wcorr_coord_eq_M_u_corr_single| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\item Final correlated high-probability theorem: \verb|LeanSlt.NNGPResNet.Correlated.corr_sphere_highProb_bound| --- \verb|LeanSlt/NNGPResNet/Correlated/SphereChaining.lean|
+\end{itemize}
+
+\subsection*{Module aggregators}
+\begin{itemize}
+\item IID exports: \verb|LeanSlt.NNGPResNet.Main| --- \verb|LeanSlt/NNGPResNet/Main.lean|
+\item Correlated exports: \verb|LeanSlt.NNGPResNet.Correlated.Main| --- \verb|LeanSlt/NNGPResNet/Correlated/Main.lean|
+\item Top-level import hook: \verb|LeanSlt.lean|.
+\end{itemize}
+
+\end{document}
