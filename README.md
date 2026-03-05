@@ -120,7 +120,7 @@ We provide a practical recipe for human–AI collaborative formalization in Lean
 
 ## Acknowledgement
 
-- `SLT/SeparableSpaceSup.lean` is sourced from [lean-rademacher](https://github.com/auto-res/lean-rademacher.git). We use `separableSpaceSup_eq_real` from it in `SLT/Dudley.lean`.
+- `SLT/SeparableSpaceSup.lean` is sourced from [lean-rademacher](https://github.com/auto-res/lean-rademacher.git). We use `separableSpaceSup_eq_real` from it in `SLT/Dudley.lean`. [lean-rademacher](https://github.com/auto-res/lean-rademacher.git) formalized the Dudley's entropy integral bound for Rademacher complexity, please refer to it if you'are interested!
 - `SLT/GaussianPoincare/LevyContinuity.lean` is sourced from [CLT](https://github.com/RemyDegenne/CLT.git). We use `tendsto_iff_tendsto_charFun` from `Clt/Inversion.lean` in `SLT/GaussianPoincare/Limit.lean`.
 - We use mcp tools from [lean-lsp-mcp](https://github.com/oOo0oOo/lean-lsp-mcp.git) to enable the agent to interact with live LSP feedbacks and retrieve relevant information.
 
