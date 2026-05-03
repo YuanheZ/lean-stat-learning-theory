@@ -1,4 +1,4 @@
-# Statistical Learning Theory in Lean 4: Empirical Processes from Scratch
+# Statistical Learning Theory in Lean 4: Empirical Processes from Scratch (ICML 2026)
 <p align="center">
   <a href="https://arxiv.org/abs/2602.02285"><img src="https://img.shields.io/badge/arXiv-Paper-red?style=for-the-badge" alt="Paper"></a>
   <a href="https://huggingface.co/collections/liminho123/statistical-learning-theory-in-lean-4"><img src="https://img.shields.io/badge/🤗-Dataset-yellow?style=for-the-badge" alt="Dataset"></a>
