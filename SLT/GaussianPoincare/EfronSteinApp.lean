@@ -331,7 +331,9 @@ lemma rademacher_values_ae {Ω : Type*} [MeasurableSpace Ω]
     rw [ae_add_measure_iff]
     have hmeas : MeasurableSet {x : ℝ | x = 1 ∨ x = -1} := by measurability
     constructor <;> {
-      rw [Measure.ae_smul_measure_iff (by norm_num : (1/2 : ℝ≥0∞) ≠ 0)]
+      have hhalf : (1 / 2 : ℝ≥0∞) ≠ 0 := by
+        exact ne_of_gt <| ENNReal.half_pos (by simp)
+      rw [Measure.ae_ennreal_smul_measure_iff hhalf]
       rw [ae_dirac_iff hmeas]
       simp
     }

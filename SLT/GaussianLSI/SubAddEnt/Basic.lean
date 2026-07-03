@@ -134,7 +134,8 @@ lemma condExpExceptCoord_integrable (i : Fin n) (f : (Fin n → Ω) → ℝ)
         _ = μˢ := map_update_prod_pi i
   have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => f (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
     hmp.integrable_comp hf_int.aestronglyMeasurable |>.mpr hf_int
-  convert hg_int.integral_prod_left
+  unfold condExpExceptCoord
+  simpa [Pi.pow_apply] using hg_int.integral_prod_left
 
 /-- Helper: if f is integrable over the product, slices are integrable -/
 lemma integrable_update_slice (i : Fin n) (f : (Fin n → Ω) → ℝ)
@@ -257,12 +258,12 @@ lemma condExpExceptCoord_mul_log_integrable (i : Fin n) (f : (Fin n → Ω) → 
         exact Real.abs_log_mul_self_lt (g x) hgx_pos hgx_le_one
       linarith [abs_nonneg (h x)]
     · -- g x = 0 (since g x ≥ 0 and ¬(0 < g x))
-      push_neg at hgx_pos
+      push Not at hgx_pos
       have hgx_zero : g x = 0 := le_antisymm hgx_pos hg_x_nn
       simp only [hgx_zero, zero_mul, abs_zero]
       linarith [abs_nonneg (h x)]
   · -- Case: g x > 1: g * log g ≥ 0 and g * log g ≤ h, so |g * log g| ≤ |h|
-    push_neg at hgx_le_one
+    push Not at hgx_le_one
     have hglog_nn : 0 ≤ g x * log (g x) := Real.mul_log_nonneg (le_of_lt hgx_le_one)
     have : |g x * log (g x)| = g x * log (g x) := abs_of_nonneg hglog_nn
     rw [this]

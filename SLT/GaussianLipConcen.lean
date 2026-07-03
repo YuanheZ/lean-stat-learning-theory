@@ -250,7 +250,7 @@ lemma ratio_bound_gronwall (φ : ℝ → ℝ) (t : ℝ) (ht : 0 < t)
     (h_diff_ineq : ∀ s, s ≠ 0 → s * deriv φ s - φ s ≤ 0) :
     φ t / t ≤ 0 := by
   by_contra h_contra
-  push_neg at h_contra
+  push Not at h_contra
   -- If φ(t)/t > 0, we derive a contradiction
   have h_ratio_diff : ∀ x, x ∈ Set.Ioo (0 : ℝ) t → DifferentiableAt ℝ (fun s => φ s / s) x := by
     intro x hx
@@ -360,11 +360,11 @@ lemma entropy_bound_exp_scaled {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
           = (exp (s / 2 * f_c x) • fderiv ℝ (fun y => s / 2 * f_c y) x) (Pi.single i 1) := by
             rw [fderiv_exp hg_diff]
         _ = exp (s / 2 * f_c x) * (fderiv ℝ (fun y => s / 2 * f_c y) x) (Pi.single i 1) := by
-            simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+            simp only [smul_apply, smul_eq_mul]
         _ = exp (s / 2 * f_c x) * ((s / 2) • fderiv ℝ f_c x) (Pi.single i 1) := by
             rw [fderiv_const_mul hfc_diff]
         _ = exp (s / 2 * f_c x) * ((s / 2) * (fderiv ℝ f x) (Pi.single i 1)) := by
-            simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, h_fc_fderiv]
+            simp only [smul_apply, smul_eq_mul, h_fc_fderiv]
         _ = s / 2 * (fderiv ℝ f x) (Pi.single i 1) * exp (s / 2 * f_c x) := by ring
     conv_lhs => arg 2; ext i; rw [h_deriv i, mul_pow, mul_pow]
     simp only [mul_comm ((s/2)^2), mul_assoc]
@@ -468,7 +468,7 @@ lemma entropy_bound_exp_scaled {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
               apply mul_le_mul_of_nonneg_right h' (exp_pos _).le
           _ = exp ((1 + s) * f_c x) := by rw [← exp_add]; ring_nf
           _ ≤ exp ((1 + s) * f_c x) + exp ((s - 1) * f_c x) := by linarith [exp_pos ((s - 1) * f_c x)]
-      · push_neg at hfc; rw [abs_of_neg hfc]
+      · push Not at hfc; rw [abs_of_neg hfc]
         have h' : -f_c x ≤ exp (-f_c x) := by rw [abs_of_neg hfc] at h; exact h
         calc (-f_c x) * exp (s * f_c x) ≤ exp (-f_c x) * exp (s * f_c x) := by
               apply mul_le_mul_of_nonneg_right h' (exp_pos _).le
@@ -519,11 +519,11 @@ theorem cgf_bound {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
           = (exp (t / 2 * f_c x) • fderiv ℝ (fun y => t / 2 * f_c y) x) (Pi.single i 1) := by
             rw [fderiv_exp hg_diff]
         _ = exp (t / 2 * f_c x) * (fderiv ℝ (fun y => t / 2 * f_c y) x) (Pi.single i 1) := by
-            simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+            simp only [smul_apply, smul_eq_mul]
         _ = exp (t / 2 * f_c x) * ((t / 2) • fderiv ℝ f_c x) (Pi.single i 1) := by
             rw [fderiv_const_mul hfc_diff]
         _ = exp (t / 2 * f_c x) * ((t / 2) * (fderiv ℝ f_c x) (Pi.single i 1)) := by
-            simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+            simp only [smul_apply, smul_eq_mul]
         _ = exp (t / 2 * f_c x) * ((t / 2) * (fderiv ℝ f x) (Pi.single i 1)) := by
             rw [h_fc_fderiv]
         _ = t / 2 * (fderiv ℝ f x) (Pi.single i 1) * exp (t / 2 * f_c x) := by ring
@@ -679,7 +679,7 @@ theorem cgf_bound {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
                 · exact h_phi_le
               exact h_final
             linarith
-          · push_neg at ht_pos
+          · push Not at ht_pos
             have ht_neg : t < 0 := lt_of_le_of_ne ht_pos ht_zero
             have hmt_pos : 0 < -t := neg_pos.mpr ht_neg
             let ψ := fun s => cgf f_c μ (-s) - s^2 * σ^2 / 2
@@ -698,14 +698,10 @@ theorem cgf_bound {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
                 simp only [neg_zero, h_deriv_cgf_zero, neg_zero] at h
                 exact h
               have hda2 : HasDerivAt (fun s : ℝ => s^2 * σ^2 / 2) 0 0 := by
-                have hp : HasDerivAt (fun s : ℝ => s^2) (2 * (0 : ℝ)) (0 : ℝ) := by
-                  convert hasDerivAt_pow 2 (0 : ℝ) using 2
-                  norm_num
-                simp only [mul_zero] at hp
-                have h := hp.mul_const (σ^2)
-                have h' := h.div_const 2
-                simp only [zero_mul, zero_div] at h'
-                exact h'
+                have hp : HasDerivAt (fun s : ℝ => s^2) 0 (0 : ℝ) := by
+                  simpa using (hasDerivAt_pow 2 (0 : ℝ))
+                have h := (hp.mul_const (σ^2)).div_const 2
+                simpa using h
               have := hda1.sub hda2
               simp only [sub_zero] at this
               exact this.deriv
@@ -729,12 +725,9 @@ theorem cgf_bound {f : (Fin n → ℝ) → ℝ} {σ L_lip : ℝ}
                     exact this
                   have hda2 : HasDerivAt (fun s => s^2 * σ^2 / 2) (s * σ^2) s := by
                     have hp : HasDerivAt (fun s => s^2) (2 * s) s := by
-                      have := hasDerivAt_pow 2 s
-                      simp only [Nat.cast_ofNat] at this
-                      convert this using 2; ring
-                    have := hp.mul_const (σ^2)
-                    have h := this.div_const 2
-                    convert h using 1; ring
+                      simpa [pow_one, Nat.cast_ofNat] using (hasDerivAt_pow 2 s)
+                    have h := (hp.mul_const (σ^2)).div_const 2
+                    simpa [mul_assoc] using h
                   exact hda1.sub hda2
                 exact hda.deriv
               rw [h1]

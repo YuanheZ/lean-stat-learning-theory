@@ -18,7 +18,7 @@ lemma closure_mem_le_sSup {E : Type v} [ConditionallyCompleteLattice E] [Topolog
   b ≤ sSup s := by
     have : s ⊆ Set.Iic (sSup s) := by
       intro x hx
-      exact ConditionallyCompleteLattice.le_csSup s x hs' hx
+      exact le_csSup hs' hx
     have : closure s ⊆ Set.Iic (sSup s) := by
       apply closure_minimal this isClosed_Iic
     exact this hb

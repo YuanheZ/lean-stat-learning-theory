@@ -298,7 +298,7 @@ lemma transitiveProj_mem_s {s : Set A} {D : ℝ} (dn : DyadicNets s D)
   by_cases hk : K ≤ k
   · rw [transitiveProj_of_le dn hnet_nonempty K k hk]
     exact dn.nets_subset K hu
-  · push_neg at hk
+  · push Not at hk
     exact dn.nets_subset k (transitiveProj_mem_nets dn hnet_nonempty K k hk u)
 
 /-- KEY LEMMA: Distance between consecutive transitive projections is ≤ ε_k (instead of (3/2)ε_k).

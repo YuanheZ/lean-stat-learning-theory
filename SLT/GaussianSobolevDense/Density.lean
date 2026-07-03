@@ -427,7 +427,7 @@ lemma smoothCutoffRReal_contDiff {R : ℝ} (hR : 0 < R) :
     filter_upwards [h_eq] with y hy
     simp [hy]
   · -- Case: |x| ≥ R, so x ≠ 0 and |·| is smooth at x
-    push_neg at hx
+    push Not at hx
     have hx_ne : x ≠ 0 := by
       intro h
       rw [h, abs_zero] at hx
@@ -466,11 +466,11 @@ lemma smoothCutoffRReal_hasCompactSupport {R : ℝ} (hR : 0 < R) :
         simp only [Set.mem_Icc]
         constructor
         · by_contra hlt
-          push_neg at hlt
+          push Not at hlt
           have habs : 2 * R ≤ |x| := by rw [abs_of_neg (by linarith : x < 0)]; linarith
           exact hx (smoothCutoffRReal_eq_zero_of_abs_ge hR habs)
         · by_contra hgt
-          push_neg at hgt
+          push Not at hgt
           have habs : 2 * R ≤ |x| := by rw [abs_of_nonneg (by linarith : 0 ≤ x)]; linarith
           exact hx (smoothCutoffRReal_eq_zero_of_abs_ge hR habs)
     _ = Set.Icc (-2*R) (2*R) := IsClosed.closure_eq isClosed_Icc
@@ -540,11 +540,12 @@ lemma measurePi_fin1_eq_gaussianReal :
     simp only [Set.mem_preimage, Set.mem_pi, Equiv.funUnique_symm_apply]
     constructor
     · intro hx
-      convert hx 0 (Set.mem_univ 0) using 1
+      have h := hx 0 (Set.mem_univ 0)
+      simpa [uniqueElim_const] using h
     · intro hx i _
       have hi : i = 0 := Subsingleton.elim i 0
-      subst hi
-      convert hx using 1
+      subst i
+      simpa [uniqueElim_const] using hx
   rw [h_preimage]
   simp only [Finset.univ_unique, Fin.default_eq_zero, Finset.prod_singleton]
 
@@ -628,7 +629,8 @@ lemma norm_fderiv_toE1Fun_eq (f : ℝ → ℝ) (hf_diff : Differentiable ℝ f) 
   have h : (linearIsometryEquivE1Real : GaussianSobolev.E 1 →L[ℝ] ℝ) =
       linearIsometryEquivE1Real.toLinearIsometry.toContinuousLinearMap := rfl
   rw [h]
-  exact ContinuousLinearMap.opNorm_comp_linearIsometryEquiv _ _
+  exact ContinuousLinearMap.opNorm_comp_linearIsometryEquiv
+    (fderiv ℝ f (equivE1Real x)) linearIsometryEquivE1Real
 
 /-! ### Transfer of W^{1,2} Membership -/
 
@@ -666,7 +668,8 @@ lemma memW12Gaussian_toE1Fun (f : ℝ → ℝ) (hf : MemW12GaussianReal f (gauss
         ‖fderiv ℝ f y‖ := by
       intro y
       rw [hiso_eq]
-      exact ContinuousLinearMap.opNorm_comp_linearIsometryEquiv _ _
+      exact ContinuousLinearMap.opNorm_comp_linearIsometryEquiv
+        (fderiv ℝ f y) linearIsometryEquivE1Real
     -- Use MemLp.of_le: MemLp g p μ → AEStronglyMeasurable f μ → (∀ᵐ x ∂μ, ‖f x‖ ≤ ‖g x‖) → MemLp f p μ
     apply MemLp.of_le hf.2
     · -- AEStronglyMeasurable: (fderiv ℝ f ·).comp iso is measurable
@@ -778,9 +781,8 @@ lemma gaussianSobolevNormSq_fromE1Fun (g : GaussianSobolev.E 1 → ℝ) (hg_smoo
         congr 1
         exact linearIsometryEquivE1Real.symm.toContinuousLinearEquiv.fderiv
       rw [h]
-      have hiso_eq : (linearIsometryEquivE1Real.symm : ℝ →L[ℝ] GaussianSobolev.E 1) =
-          linearIsometryEquivE1Real.symm.toLinearIsometry.toContinuousLinearMap := rfl
-      rw [hiso_eq, ContinuousLinearMap.opNorm_comp_linearIsometryEquiv]
+      exact ContinuousLinearMap.opNorm_comp_linearIsometryEquiv
+        (fderiv ℝ g (equivE1Real.symm x)) linearIsometryEquivE1Real.symm
     rw [hfun_eq]
 
 /-- toE1Fun and fromE1Fun are inverses on functions. -/

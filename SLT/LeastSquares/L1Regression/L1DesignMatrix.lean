@@ -64,10 +64,11 @@ lemma designMatrixMul_apply_sum_columns (x : Fin n → EuclideanSpace ℝ (Fin d
     (θ : EuclideanSpace ℝ (Fin d)) (i : Fin n) :
     (designMatrixMul x θ) i = ∑ j, θ j * (designMatrixColumn x j) i := by
   rw [designMatrixMul_apply]
-  simp only [PiLp.inner_apply, RCLike.inner_apply, RCLike.conj_to_real, designMatrixColumn_apply]
-  congr 1
-  ext j
-  ring
+  have h_inner : ∀ a b : ℝ, inner ℝ a b = a * b := by
+    intro a b
+    change b * star a = a * b
+    simp [mul_comm]
+  simp [PiLp.inner_apply, designMatrixColumn_apply, mul_comm]
 
 /-- The design matrix multiplication can be written as Σⱼ θⱼ · Xⱼ -/
 lemma designMatrixMul_eq_sum_columns (x : Fin n → EuclideanSpace ℝ (Fin d))

@@ -49,8 +49,7 @@ lemma gaussianReal_zero_map_neg (v : NNReal) :
   have h2 : (⟨(-1 : ℝ) ^ 2, sq_nonneg _⟩ : NNReal) = (1 : NNReal) := by
     ext
     simp
-  rw [h2, one_mul] at h
-  convert h using 2
+  simpa [h2] using h
 
 /-- Standard Gaussian is negation-invariant -/
 instance gaussianReal_zero_IsNegInvariant (v : NNReal) : (gaussianReal (0 : ℝ) v).IsNegInvariant where
@@ -259,6 +258,7 @@ lemma innerProductProcess_isSubGaussianProcess (n : ℕ) (hn : 0 < n) :
     have h := @integral_fin_nat_prod_eq_prod ℝ _ n (fun _ => ℝ) _ (fun _ => gaussianReal 0 1) _
         (fun i x => Real.exp (t * a i * x))
     convert h using 1
+    rw [GaussianMeasure.stdGaussianPi]
   rw [h_fubini]
   have h_mgf : ∀ i : Fin n, ∫ x : ℝ, Real.exp (t * a i * x) ∂(gaussianReal 0 1) =
       Real.exp ((t * a i)^2 / 2) := fun i => by
@@ -359,7 +359,7 @@ lemma euclideanNorm_integrable_stdGaussianPi (n : ℕ) :
   -- Strategy: √(∑ wᵢ²) ≤ 1 + ∑ wᵢ², and ∑ wᵢ² is integrable under Gaussian product measure
   -- First, the sum of squares is integrable (using integrable_sq_eval_stdGaussianPi)
   have h_sum_sq_int : Integrable (fun w : Fin n → ℝ => ∑ i, w i ^ 2) (stdGaussianPi n) := by
-    apply integrable_finset_sum
+    apply integrable_finsetSum
     intro i _
     exact integrable_sq_eval_stdGaussianPi i
   -- Bound: √x ≤ 1 + x for x ≥ 0
@@ -370,7 +370,7 @@ lemma euclideanNorm_integrable_stdGaussianPi (n : ℕ) :
       calc Real.sqrt x ≤ 1 := Real.sqrt_le_one.mpr hx1
         _ ≤ 1 + x := by linarith
     · -- For x > 1, √x ≤ x ≤ 1 + x
-      push_neg at hx1
+      push Not at hx1
       calc Real.sqrt x ≤ x := by rw [Real.sqrt_le_left (by linarith : 0 ≤ x)]; nlinarith
         _ ≤ 1 + x := by linarith
   -- Apply integrability
@@ -480,14 +480,20 @@ lemma localGaussianComplexity_integrand_integrable (n : ℕ) (H : Set (X → ℝ
   by_cases hn : n = 0
   case pos =>
     subst hn
-    convert integrable_zero (Fin 0 → ℝ) ℝ (stdGaussianPi 0) using 1
-    ext w
-    simp only [Nat.cast_zero, inv_zero, zero_mul, abs_zero]
-    conv_lhs => rw [show (fun g => ⨆ (_ : g ∈ localizedBall H δ x), (0 : ℝ)) = fun _ => 0 from by
-      ext g; by_cases hg : g ∈ localizedBall H δ x <;> simp [ciSup_neg, *]]
-    exact Real.iSup_const_zero
+    have hfun :
+        (fun w : Fin 0 → ℝ => ⨆ g ∈ localizedBall H δ x,
+          |(((0 : ℕ) : ℝ))⁻¹ * ∑ i : Fin 0, w i * g (x i)|) = fun _ => 0 := by
+      funext w
+      simp only [Nat.cast_zero, inv_zero, zero_mul, abs_zero]
+      conv_lhs => rw [show (fun g => ⨆ (_ : g ∈ localizedBall H δ x), (0 : ℝ)) = fun _ => 0 from by
+        ext g; by_cases hg : g ∈ localizedBall H δ x <;> simp [ciSup_neg, *]]
+      exact Real.iSup_const_zero
+    rw [hfun]
+    exact
+      (integrable_const (0 : ℝ) :
+        Integrable (0 : (Fin 0 → ℝ) → ℝ) (stdGaussianPi 0))
   case neg =>
-    push_neg at hn
+    push Not at hn
     have hn_pos : 0 < n := Nat.pos_of_ne_zero hn
     have h_bound_int : Integrable (fun w => δ / Real.sqrt n * euclideanNorm n w) (stdGaussianPi n) :=
       (euclideanNorm_integrable_stdGaussianPi n).const_mul _
@@ -513,7 +519,7 @@ lemma localGaussianComplexity_integrand_integrable (n : ℕ) (H : Set (X → ℝ
         · have heq2 : f g = (fun w => |(n : ℝ)⁻¹ * ∑ i : Fin n, w i * (g (x i))|) := by
             ext w; simp only [f, ciSup_pos hg]
           rw [heq2]; apply Continuous.lowerSemicontinuous; apply Continuous.abs
-          apply continuous_const.mul; apply continuous_finset_sum _ (fun i _ => ?_)
+          apply continuous_const.mul; apply continuous_finsetSum _ (fun i _ => ?_)
           exact continuous_apply i |>.mul continuous_const
         · have heq2 : f g = (fun _ => (0 : ℝ)) := by
             ext w; simp only [f, ciSup_neg hg, Real.sSup_empty]
@@ -842,8 +848,9 @@ lemma EmpiricalSpace.continuous_coord (n : ℕ) (i : Fin n) :
   have h_coord_bound : |v' i - v i| ≤ Real.sqrt n * dist v' v := by
     have h_sq : (v' i - v i)^2 ≤ n * (dist v' v)^2 := by
       have h := EmpiricalSpace.coord_sq_le n i (v' - v)
-      simp at h
-      convert h using 2
+      change (v' i - v i)^2 ≤ n * (empiricalNorm n (v' - v))^2
+      have hcoord : (v' - v : EmpiricalSpace n) i = v' i - v i := rfl
+      simpa [hcoord] using h
     have h1 : Real.sqrt ((v' i - v i)^2) ≤ Real.sqrt (n * (dist v' v)^2) :=
       Real.sqrt_le_sqrt h_sq
     have h2 : Real.sqrt (n * (dist v' v)^2) = Real.sqrt n * Real.sqrt ((dist v' v)^2) :=
@@ -871,7 +878,7 @@ lemma innerProductProcess_continuous_v (n : ℕ) (w : Fin n → ℝ) :
     Continuous (fun v : EmpiricalSpace n => innerProductProcess n v w) := by
   unfold innerProductProcess
   refine Continuous.mul continuous_const ?_
-  refine continuous_finset_sum _ (fun i _ => ?_)
+  refine continuous_finsetSum _ (fun i _ => ?_)
   exact Continuous.mul continuous_const (EmpiricalSpace.continuous_coord n i)
 
 /-- Auxiliary: innerProductProcess differences are integrable under stdGaussianPi -/
@@ -883,7 +890,7 @@ lemma innerProductProcess_diff_integrable (n : ℕ) (v₁ v₂ : EmpiricalSpace 
   simp_rw [h_eq]
   unfold innerProductProcess
   apply Integrable.const_mul
-  apply integrable_finset_sum
+  apply integrable_finsetSum
   intro i _
   -- ∫ wᵢ * (v₁ - v₂)ᵢ dμ: linear in wᵢ, which has finite second moment
   apply Integrable.mul_const
@@ -898,7 +905,7 @@ lemma innerProductProcess_increment_centered (n : ℕ) (v₁ v₂ : EmpiricalSpa
   unfold innerProductProcess
   rw [integral_const_mul]
   have h : ∫ w, ∑ i, w i * (v₁ - v₂) i ∂(stdGaussianPi n) = 0 := by
-    rw [integral_finset_sum]
+    rw [integral_finsetSum]
     · apply Finset.sum_eq_zero
       intro i _
       rw [integral_mul_const]
@@ -1028,8 +1035,8 @@ lemma dudley_empiricalProcess (n : ℕ) (hn : 0 < n) (x : Fin n → X)
           funext i
           show (0 : ℝ) - empiricalMetricImage n x g i = -(empiricalMetricImage n x g i)
           ring
-        rw [h_sub, empiricalNorm_neg]
-        rfl
+        rw [h_sub]
+        exact empiricalNorm_neg n (empiricalMetricImage n x g)
       rw [h_dist_zero] at h_diam
       have h_norm_bound : empiricalNorm n (fun i => g (x i)) ≤ D := le_trans h_diam hdiam
       have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr hn
@@ -1090,8 +1097,8 @@ lemma dudley_empiricalProcess (n : ℕ) (hn : 0 < n) (x : Fin n → X)
             apply le_ciSup h_bdd ⟨g₀, hg₀⟩
     haveI : Nonempty (X → ℝ) := ⟨fun _ => 0⟩
     haveI : Nonempty (EmpiricalSpace n) := ⟨0⟩
-    have h_ciSup := @ciSup_image ℝ (X → ℝ) (EmpiricalSpace n) _ _ _ G hG_nonempty
-      (empiricalMetricImage n x) (fun v => innerProductProcess n v w) h_bdd h_ssup
+    have h_ciSup := ciSup_image (s := G) (f := empiricalMetricImage n x)
+      (g := fun v => innerProductProcess n v w) h_bdd h_ssup
     exact h_ciSup.symm
   conv_lhs =>
     arg 2

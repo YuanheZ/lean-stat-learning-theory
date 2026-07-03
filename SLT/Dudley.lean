@@ -204,7 +204,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
       rw [hp2]
       by_cases hk1 : k + 1 < K
       · exact transitiveProj_mem_nets dn hnet_nonempty K (k + 1) hk1 u
-      · push_neg at hk1
+      · push Not at hk1
         have hk1_eq : k + 1 = K := by omega
         rw [hk1_eq, transitiveProj_self]
         exact hu
@@ -216,7 +216,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
     · exact Set.Finite.subset (Finset.finite_toSet (edges k)) (h_chain_trans_subset k hk)
     · -- When k ≥ K, both transProj k u = u and transProj (k+1) u = u
       -- So chaining_pairs_trans k ⊆ {(u, u) : u ∈ nets K} ⊆ (nets K) × (nets K)
-      push_neg at hk
+      push Not at hk
       apply Set.Finite.subset ((dn.nets K).finite_toSet.prod (dn.nets K).finite_toSet)
       intro p ⟨u, hu, hp1, hp2⟩
       simp only [Set.mem_prod, Finset.mem_coe, transProj] at hp1 hp2 ⊢
@@ -288,7 +288,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
       rw [← hpv, hp2]
       by_cases hk1 : k + 1 < K
       · exact transitiveProj_mem_nets dn hnet_nonempty K (k + 1) hk1 u
-      · push_neg at hk1
+      · push Not at hk1
         have hk1_eq : k + 1 = K := by omega
         rw [hk1_eq, transitiveProj_self]
         exact hu
@@ -350,7 +350,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
 
   have h_SBase_fin_int : Integrable SBase_fin μ := by
     have h_dom_int : Integrable (fun ω => ∑ u ∈ dn.nets 0, |X u ω - X t₀ ω|) μ :=
-      integrable_finset_sum _ (fun u _ => (hX_int u t₀).abs)
+      integrable_finsetSum _ (fun u _ => (hX_int u t₀).abs)
     -- Measurability: via Finset.measurable_sup' with explicit application
     -- Define the function-valued form that Finset.measurable_sup' expects
     let SBase_fn : Ω → ℝ := (dn.nets 0).sup' (hnet_nonempty 0) (fun u ω => X u ω - X t₀ ω)
@@ -369,7 +369,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
   have h_SΔ_fin_int : ∀ k, Integrable (SΔ_fin k) μ := by
     intro k
     have h_dom_int : Integrable (fun ω => ∑ p ∈ edges k, |X p.2 ω - X p.1 ω|) μ :=
-      integrable_finset_sum _ (fun p _ => (hX_int p.2 p.1).abs)
+      integrable_finsetSum _ (fun p _ => (hX_int p.2 p.1).abs)
     -- Define the function-valued form
     let SΔ_fn : Ω → ℝ := (edges k).sup' (h_edges_nonempty k) (fun p ω => X p.2 ω - X p.1 ω)
     have h_incr_meas' : Measurable SΔ_fn :=
@@ -449,7 +449,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
     -- Integrability of SBase_shifted
     have h_shifted_int : Integrable SBase_shifted μ := by
       have h_dom_int : Integrable (fun ω => ∑ u ∈ dn.nets 0, |X u ω - X u₀ ω|) μ :=
-        integrable_finset_sum _ (fun u _ => (hX_int u u₀).abs)
+        integrable_finsetSum _ (fun u _ => (hX_int u u₀).abs)
       let SBase_fn : Ω → ℝ := (dn.nets 0).sup' (hnet_nonempty 0) (fun u ω => X u ω - X u₀ ω)
       have h_meas' : Measurable SBase_fn :=
         Finset.measurable_sup' (hnet_nonempty 0) (fun u _ => (hX_meas u).sub (hX_meas u₀))
@@ -510,7 +510,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
   have h_S_net_int : Integrable S_net μ := by
     -- Dominating function: sum of |X u - X t₀| over net_K
     have h_dom : Integrable (fun ω => ∑ u ∈ dn.nets K, |X u ω - X t₀ ω|) μ :=
-      integrable_finset_sum _ (fun u _ => (hX_int u t₀).abs)
+      integrable_finsetSum _ (fun u _ => (hX_int u t₀).abs)
     -- Measurability
     have h_meas : Measurable S_net := by
       simp only [S_net]
@@ -580,7 +580,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
         obtain ⟨C, hC_pos, hC_le_sqrt2, hC_bound⟩ := h_base_bound_card_ge_2 hcard
         exact ⟨C, le_of_lt hC_pos, hC_le_sqrt2, hC_bound⟩
       · -- Case: |net_0| < 2, so |net_0| = 1 (since nonempty)
-        push_neg at hcard
+        push Not at hcard
         have h1 : (dn.nets 0).card = 1 := by
           have hpos := h_net_card_pos 0
           omega
@@ -726,7 +726,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
           (abs_of_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _))).symm
         linarith
       · -- For k ≥ K: SΔ_trans k = 0 (all pairs collapse to (u, u))
-        push_neg at hk
+        push Not at hk
         -- Show SΔ_trans k ω = 0 for all ω
         have h_zero : ∀ ω, SΔ_trans k ω = 0 := by
           intro ω
@@ -809,7 +809,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
                 Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2) _
               rw [h_sqrt_mul]; ring
       case neg =>
-        push_neg at hcard_trans
+        push Not at hcard_trans
         have h_ne : ((h_chain_trans_finite k).toFinset).Nonempty := by
           rw [Set.Finite.toFinset_nonempty]; exact h_chain_trans_nonempty k
         have h_card_1 : (h_chain_trans_finite k).toFinset.card = 1 := by
@@ -843,7 +843,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
         (4 * Real.sqrt 2) * σ * dyadicRHS_real s D (K + 1) := by
       calc ∫ (ω : Ω), ∑ k ∈ Finset.range K, SΔ_trans k ω ∂μ
         _ = ∑ k ∈ Finset.range K, ∫ (ω : Ω), SΔ_trans k ω ∂μ := by
-            rw [integral_finset_sum]; intro k _; exact h_SΔ_trans_int k
+            rw [integral_finsetSum]; intro k _; exact h_SΔ_trans_int k
         _ ≤ ∑ k ∈ Finset.range K, Real.sqrt 2 * σ * dyadicScale D k *
             Real.sqrt (Real.log (dn.nets (k + 1)).card) :=
             Finset.sum_le_sum (fun k hk => h2a_trans k hk)
@@ -931,7 +931,7 @@ lemma dudley_chaining_bound_core {Ω : Type u} [MeasurableSpace Ω] {A : Type v}
 
     -- Integrability for transitive sum
     have h_SΔ_trans_sum_int : Integrable (fun ω => ∑ k ∈ Finset.range K, SΔ_trans k ω) μ := by
-      apply integrable_finset_sum
+      apply integrable_finsetSum
       intro k _
       exact h_SΔ_trans_int k
 
@@ -995,7 +995,7 @@ lemma tendsto_le_liminf_of_le' {u v : ℕ → ℝ} {L : ℝ}
       filter_upwards [h_ev] with n hn
       exact le_of_lt (lt_of_lt_of_le hn (h n))
     exact le_csSup h_bdd_above h_L_eps_in
-  by_contra h_neg; push_neg at h_neg
+  by_contra h_neg; push Not at h_neg
   specialize h_dense ((L - sSup {a | ∀ᶠ n in Filter.atTop, a ≤ v n}) / 2) (by linarith)
   linarith
 
@@ -1155,7 +1155,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
       have h_int_diff := hX_int u t₀
       simp only [hcenter, sub_zero] at h_int_diff
       exact h_int_diff
-    refine Integrable.mono (integrable_finset_sum (dn.nets K)
+    refine Integrable.mono (integrable_finsetSum (dn.nets K)
       (fun u hu => (h_X_int' u hu).abs)) ?_ ?_
     · apply Measurable.aestronglyMeasurable
       convert Finset.measurable_sup' (hnet_nonempty K) (fun u _ => hX_meas u) using 1
@@ -1326,7 +1326,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
           by_cases hY : Y K ω ≥ 0
           · simp only [negPart_def, max_eq_right (by linarith : -Y K ω ≤ 0)]
             exact abs_nonneg _
-          · push_neg at hY
+          · push Not at hY
             simp only [negPart_def, max_eq_left (by linarith : 0 ≤ -Y K ω)]
             have : -Y K ω ≤ -X (proj K 0) ω := by linarith [h_Y_ge_X ω]
             calc -Y K ω ≤ -X (proj K 0) ω := this
@@ -1438,7 +1438,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
       have h_liminf_ge_0 : 0 ≤ Filter.liminf (fun K => Y K ω) Filter.atTop := by
         have h_exists_pos : ∃ n, X (t n) ω > 0 := by
           by_contra h_all_le_0
-          push_neg at h_all_le_0
+          push Not at h_all_le_0
           have h_bdd' : BddAbove (Set.range (fun n => X (t n) ω)) := by
             use 0
             intro y hy
@@ -1577,7 +1577,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
                       · exact h_geom.mul_left _
                   _ < ⊤ := ENNReal.ofReal_lt_top
         have h_ae_lt_top : ∀ᵐ ω ∂μ, ∑' K, ENNReal.ofReal |Δ K ω| < ⊤ :=
-          ae_lt_top (Measurable.ennreal_tsum (fun K =>
+          ae_lt_top (Measurable.tsum (fun K =>
             (hX_meas (proj (K + 1) 0)).sub (hX_meas (proj K 0)) |>.abs.ennreal_ofReal))
             h_lintegral_sum.ne
         filter_upwards [h_ae_lt_top] with ω h_lt_top
@@ -1662,7 +1662,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
             have h_ae_meas : AEStronglyMeasurable (fun ω => ∑' K, |Δ K ω|) μ := by
               let f : ℕ → Ω → NNReal := fun K ω => ‖|Δ K ω|‖₊
               have h_f_meas : ∀ K, Measurable (f K) := fun K => (h_Δ_abs_meas K).nnnorm
-              have h_tsum_meas : Measurable (fun ω => ∑' K, f K ω) := Measurable.nnreal_tsum h_f_meas
+              have h_tsum_meas : Measurable (fun ω => ∑' K, f K ω) := Measurable.tsum h_f_meas
               have h_f_eq : ∀ K ω, (f K ω : ℝ) = |Δ K ω| := fun K ω => by
                 simp only [f, coe_nnnorm, Real.norm_eq_abs, abs_abs]
               have h_eq : (fun ω => ∑' K, |Δ K ω|) = (fun ω => ∑' K, (f K ω : ℝ)) := by
@@ -2020,7 +2020,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
                   exact ENNReal.ofReal_le_ofReal (hB_bound K hK)
                 have h_liminf_bound : Filter.liminf (fun K => ∫⁻ ω, g' K ω ∂μ) Filter.atTop ≤ ENNReal.ofReal B := by
                   apply Filter.liminf_le_of_le
-                  · exact ⟨0, Filter.Eventually.of_forall (fun _ => zero_le _)⟩
+                  · exact ⟨0, Filter.Eventually.of_forall (fun _ => zero_le)⟩
                   · intro b hb
                     have h_evt : ∀ᶠ K in Filter.atTop, ∫⁻ ω, g' K ω ∂μ ≤ ENNReal.ofReal B := by
                       filter_upwards [Filter.eventually_ge_atTop 1] with K hK
@@ -2164,7 +2164,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
               exact ENNReal.ofReal_le_ofReal (hB_bound K hK)
             have h_liminf_bound : Filter.liminf (fun K => ∫⁻ ω, g' K ω ∂μ) Filter.atTop ≤ ENNReal.ofReal B := by
               apply Filter.liminf_le_of_le
-              · exact ⟨0, Filter.Eventually.of_forall (fun _ => zero_le _)⟩
+              · exact ⟨0, Filter.Eventually.of_forall (fun _ => zero_le)⟩
               · intro b hb
                 have h_evt : ∀ᶠ K in Filter.atTop, ∫⁻ ω, g' K ω ∂μ ≤ ENNReal.ofReal B := by
                   filter_upwards [Filter.eventually_ge_atTop 1] with K hK
@@ -2242,7 +2242,7 @@ theorem dudley_chaining_bound_countable {Ω : Type u} [MeasurableSpace Ω] {A : 
             _ ≤ |Filter.liminf (fun K => Y K ω) Filter.atTop| := le_abs_self _
             _ ≤ |X (t 0) ω| + |Filter.liminf (fun K => Y K ω) Filter.atTop| := le_add_of_nonneg_left (abs_nonneg _)
         · -- sup < 0
-          push_neg at h_sup_nonneg
+          push Not at h_sup_nonneg
           -- |sup| = -sup ≤ -X(t 0) since X(t 0) ≤ sup
           rw [abs_of_neg h_sup_nonneg]
           have h_X_t0_le : X (t 0) ω ≤ ⨆ n, X (t n) ω := le_ciSup h_bdd_above 0

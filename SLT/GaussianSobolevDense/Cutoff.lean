@@ -44,7 +44,7 @@ lemma smoothCutoff_deriv_bounded :
     rw [Function.mem_support] at hx
     -- x must be in [-2, 2], otherwise deriv = 0
     simp only [Set.mem_Icc]
-    constructor <;> by_contra habs <;> push_neg at habs
+    constructor <;> by_contra habs <;> push Not at habs
     · -- Case: x < -2, show deriv = 0 (contradiction with hx)
       have heq : ∀ᶠ y in nhds x, smoothCutoff y = 0 := by
         have hradius : 0 < -x - 2 := by linarith
@@ -85,7 +85,7 @@ lemma fderiv_norm_div_bound {R : ℝ} (hR : 0 < R) (x : E n) :
   have hLip : LipschitzWith ⟨1 / R, by positivity⟩ (fun y : E n => ‖y‖ / R) :=
     LipschitzWith.of_dist_le_mul fun y z => by
       have h1 : |‖y‖ - ‖z‖| ≤ ‖y - z‖ := abs_norm_sub_norm_le y z
-      simp only [NNReal.coe_mk, Real.dist_eq]
+      simp only [Real.dist_eq]
       have h2 : ‖y‖ / R - ‖z‖ / R = (‖y‖ - ‖z‖) / R := by ring
       rw [h2, abs_div, abs_of_pos hR]
       calc |‖y‖ - ‖z‖| / R ≤ ‖y - z‖ / R := div_le_div_of_nonneg_right h1 (le_of_lt hR)
@@ -123,7 +123,7 @@ lemma smoothCutoffR_fderiv_bound {R : ℝ} (hR : 0 < R) :
       rw [hfderiv_eq, norm_zero]
       exact div_nonneg (le_of_lt hC_pos) (le_of_lt hR)
     · -- Case: ‖x‖ ≥ R, use chain rule
-      push_neg at hxR
+      push Not at hxR
       -- smoothCutoffR R x = smoothCutoff (‖x‖ / R)
       -- By chain rule: fderiv = (deriv smoothCutoff at ‖x‖/R) ∘ fderiv(‖·‖/R)
       have hx_ne : x ≠ 0 := by
@@ -136,6 +136,8 @@ lemma smoothCutoffR_fderiv_bound {R : ℝ} (hR : 0 < R) :
           (contDiffAt_norm ℝ hx_ne).differentiableAt WithTop.top_ne_zero
         have h2 : DifferentiableAt ℝ (fun y : E n => ‖y‖ * R⁻¹) x := h1.mul_const R⁻¹
         convert h2 using 1
+        ext y
+        rw [div_eq_mul_inv]
       have h_cutoff_diff : DifferentiableAt ℝ smoothCutoff (‖x‖ / R) :=
         smoothCutoff_contDiff.differentiable (WithTop.coe_ne_zero.mpr WithTop.top_ne_zero) (‖x‖ / R)
       -- Chain rule
@@ -154,7 +156,7 @@ lemma smoothCutoffR_fderiv_bound {R : ℝ} (hR : 0 < R) :
               -- fderiv of scalar function = deriv times identity
               have heq : fderiv ℝ smoothCutoff (‖x‖ / R) = (deriv smoothCutoff (‖x‖ / R)) • (1 : ℝ →L[ℝ] ℝ) := by
                 ext
-                simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.one_apply, smul_eq_mul]
+                simp only [smul_apply, one_apply_eq_self, smul_eq_mul]
                 rw [fderiv_eq_smul_deriv, smul_eq_mul, mul_comm]
               rw [heq, norm_smul, norm_one, mul_one, Real.norm_eq_abs]
               calc |deriv smoothCutoff (‖x‖ / R)| = ‖deriv smoothCutoff (‖x‖ / R)‖ := (Real.norm_eq_abs _).symm
@@ -200,11 +202,11 @@ lemma cutoff_L2_convergence (f : E n → ℝ) (hf : MemLp f 2 (stdGaussianE n)) 
   -- First, show that |f|² is integrable (i.e., ∫⁻ |f|² < ∞)
   have hf_sq_int : ∫⁻ x, (‖f x‖₊ : ℝ≥0∞) ^ (2 : ℝ) ∂(stdGaussianE n) < ⊤ := by
     have hlt := hf.eLpNorm_lt_top
-    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
+    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num : (2 : ℝ≥0∞) ≠ 0)
         (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)] at hlt
     simp only [ENNReal.toReal_ofNat, one_div, enorm_eq_nnnorm] at hlt
     by_contra habs
-    push_neg at habs
+    push Not at habs
     rw [eq_top_iff.mpr habs, ENNReal.top_rpow_of_pos (by norm_num : (0 : ℝ) < 2⁻¹)] at hlt
     exact (lt_irrefl ⊤) hlt
 
@@ -312,7 +314,7 @@ lemma cutoff_L2_convergence (f : E n → ℝ) (hf : MemLp f 2 (stdGaussianE n)) 
   have heLpNorm_eq : ∀ R, eLpNorm (fun x => f x * (1 - smoothCutoffR R x)) 2 (stdGaussianE n) =
       (∫⁻ x, F R x ∂(stdGaussianE n)) ^ (2⁻¹ : ℝ) := by
     intro R
-    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
+    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num : (2 : ℝ≥0∞) ≠ 0)
         (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)]
     simp only [ENNReal.toReal_ofNat, one_div, enorm_eq_nnnorm, F]
   simp only [heLpNorm_eq]
@@ -407,11 +409,11 @@ lemma cutoff_gradient_error_bound (f : E n → ℝ)
 
   have hg_sq_int : ∫⁻ x, (‖g x‖₊ : ℝ≥0∞) ^ (2 : ℝ) ∂(stdGaussianE n) < ⊤ := by
     have hlt := hf_grad.eLpNorm_lt_top
-    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
+    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num : (2 : ℝ≥0∞) ≠ 0)
         (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)] at hlt
     simp only [ENNReal.toReal_ofNat, one_div, enorm_eq_nnnorm, g] at hlt ⊢
     by_contra habs
-    push_neg at habs
+    push Not at habs
     rw [eq_top_iff.mpr habs, ENNReal.top_rpow_of_pos (by norm_num : (0 : ℝ) < 2⁻¹)] at hlt
     exact (lt_irrefl ⊤) hlt
 
@@ -467,7 +469,7 @@ lemma cutoff_gradient_error_bound (f : E n → ℝ)
   have heLpNorm_eq : ∀ R, eLpNorm (fun x => (1 - smoothCutoffR R x) • fderiv ℝ f x) 2 (stdGaussianE n) =
       (∫⁻ x, F R x ∂(stdGaussianE n)) ^ (2⁻¹ : ℝ) := by
     intro R
-    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
+    rw [MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num : (2 : ℝ≥0∞) ≠ 0)
         (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)]
     simp only [ENNReal.toReal_ofNat, one_div, enorm_eq_nnnorm, F, g]
   simp only [heLpNorm_eq]
@@ -510,13 +512,15 @@ lemma cutoff_gradient_extra_term (f : E n → ℝ) (hf : MemLp f 2 (stdGaussianE
       rw [hfderiv_eq, norm_zero]
       exact div_nonneg (le_of_lt hC_pos) (le_of_lt hR)
     · -- Case: ‖x‖ ≥ R, use chain rule
-      push_neg at hxR
+      push Not at hxR
       have hx_ne : x ≠ 0 := by intro habs; rw [habs, norm_zero] at hxR; linarith
       have h_norm_diff : DifferentiableAt ℝ (fun y : E n => ‖y‖ / R) x := by
         have h1 : DifferentiableAt ℝ (fun y : E n => ‖y‖) x :=
           (contDiffAt_norm ℝ hx_ne).differentiableAt WithTop.top_ne_zero
         have h2 : DifferentiableAt ℝ (fun y : E n => ‖y‖ * R⁻¹) x := h1.mul_const R⁻¹
         convert h2 using 1
+        ext y
+        rw [div_eq_mul_inv]
       have h_cutoff_diff : DifferentiableAt ℝ smoothCutoff (‖x‖ / R) :=
         smoothCutoff_contDiff.differentiable (WithTop.coe_ne_zero.mpr WithTop.top_ne_zero) (‖x‖ / R)
       have hchain : fderiv ℝ (smoothCutoffR (n := n) R) x =
@@ -531,7 +535,7 @@ lemma cutoff_gradient_extra_term (f : E n → ℝ) (hf : MemLp f 2 (stdGaussianE
             apply mul_le_mul
             · have heq : fderiv ℝ smoothCutoff (‖x‖ / R) = (deriv smoothCutoff (‖x‖ / R)) • (1 : ℝ →L[ℝ] ℝ) := by
                 ext
-                simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.one_apply, smul_eq_mul]
+                simp only [smul_apply, one_apply_eq_self, smul_eq_mul]
                 rw [fderiv_eq_smul_deriv, smul_eq_mul, mul_comm]
               rw [heq, norm_smul, norm_one, mul_one, Real.norm_eq_abs]
               calc |deriv smoothCutoff (‖x‖ / R)| = ‖deriv smoothCutoff (‖x‖ / R)‖ := (Real.norm_eq_abs _).symm
@@ -881,7 +885,7 @@ theorem tendsto_cutoff_W12 (f : E n → ℝ) (hf : MemW12Gaussian n f (stdGaussi
       refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hsum_tendsto ?_ ?_
       · -- Eventually 0 ≤ LHS (always true for eLpNorm)
         filter_upwards with R
-        exact zero_le _
+        exact zero_le
       · -- Eventually LHS ≤ RHS (only need for R > 0)
         filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with R (hR_pos : 0 < R)
         -- Need: ||∇(f * χ_R - f)|| ≤ ||(1-χ_R)∇f|| + ||f∇χ_R||
@@ -901,8 +905,8 @@ theorem tendsto_cutoff_W12 (f : E n → ℝ) (hf : MemW12Gaussian n f (stdGaussi
             have heq : f x • fderiv ℝ (smoothCutoffR R) x + smoothCutoffR R x • fderiv ℝ f x - fderiv ℝ f x =
                 f x • fderiv ℝ (smoothCutoffR R) x - (1 - smoothCutoffR R x) • fderiv ℝ f x := by
               ext v
-              simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.add_apply,
-                ContinuousLinearMap.smul_apply, sub_smul, one_smul]
+              simp only [sub_apply, add_apply,
+                smul_apply, sub_smul, one_smul]
               ring
             rw [heq]
             exact norm_sub_le _ _
@@ -971,9 +975,9 @@ theorem tendsto_cutoff_W12 (f : E n → ℝ) (hf : MemW12Gaussian n f (stdGaussi
                 simp only [hfderiv_zero, norm_zero]
                 exact norm_nonneg _
               · -- Case ‖x‖ ≥ R: Since χ_R(x) = 1, we have ‖x‖ ≤ R, so ‖x‖ = R
-                push_neg at hnorm_lt
+                push Not at hnorm_lt
                 have hnorm_le : ‖x‖ ≤ R := by
-                  by_contra hgt; push_neg at hgt
+                  by_contra hgt; push Not at hgt
                   -- ‖x‖ > R, so ‖x‖/R > 1
                   have hgt' : ‖x‖ / R > 1 := (one_lt_div hR_pos).mpr hgt
                   -- When ‖x‖/R > 1, smoothCutoff (‖x‖/R) < 1, contradicting χ_R(x) = 1
@@ -982,7 +986,7 @@ theorem tendsto_cutoff_W12 (f : E n → ℝ) (hf : MemW12Gaussian n f (stdGaussi
                     · have h0 := smoothCutoff_eq_zero_of_ge (by
                         rw [abs_of_nonneg (div_nonneg (norm_nonneg x) hR_pos.le)]; exact hge2)
                       simp only [h0]; norm_num
-                    · push_neg at hge2
+                    · push Not at hge2
                       -- 1 < ‖x‖/R, so smoothCutoff < 1 by the lemma
                       have habs1 : 1 < |‖x‖ / R| := by
                         rw [abs_of_nonneg (div_nonneg (norm_nonneg _) hR_pos.le)]; exact hgt'

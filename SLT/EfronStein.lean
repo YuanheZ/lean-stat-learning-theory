@@ -282,7 +282,8 @@ lemma integral_mul_condExpExceptCoord (i : Fin n) (f : (Fin n → Ω) → ℝ)
           _ = μˢ := map_update_prod_pi i
     have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => f (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
       hmp.integrable_comp hf.aestronglyMeasurable |>.mpr hf
-    convert hg_int.integral_prod_left
+    unfold condExpExceptCoord
+    simpa [Pi.pow_apply] using hg_int.integral_prod_left
   have hcond_sq_int : Integrable (condExpExceptCoord (μs := μs) i (f ^ 2)) μˢ := by
     have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 i p.2)
                (μˢ.prod (μs i)) μˢ := by
@@ -298,7 +299,8 @@ lemma integral_mul_condExpExceptCoord (i : Fin n) (f : (Fin n → Ω) → ℝ)
           _ = μˢ := map_update_prod_pi i
     have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => (f ^ 2) (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
       hmp.integrable_comp hf2.aestronglyMeasurable |>.mpr hf2
-    convert hg_int.integral_prod_left
+    unfold condExpExceptCoord
+    simpa [Pi.pow_apply] using hg_int.integral_prod_left
   -- A.e. slice integrability for f² (needed for Jensen bound)
   have hf2_slice_ae : ∀ᵐ x ∂μˢ, Integrable (fun y => f (Function.update x i y) ^ 2) (μs i) := by
     have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 i p.2)
@@ -454,7 +456,8 @@ lemma total_variance_identity (i : Fin n) (f : (Fin n → Ω) → ℝ)
             _ = μˢ := map_update_prod_pi i
       have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => f (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
         hmp.integrable_comp (hf.integrable one_le_two).aestronglyMeasurable |>.mpr (hf.integrable one_le_two)
-      convert hg_int.integral_prod_left
+      unfold condExpExceptCoord
+      simpa [Pi.pow_apply] using hg_int.integral_prod_left
     -- Show (condExpExceptCoord)² is integrable via Jensen bound
     have hf2 := hf.integrable_sq
     have hcond_sq_int : Integrable (condExpExceptCoord (μs := μs) i (f ^ 2)) μˢ := by
@@ -472,7 +475,8 @@ lemma total_variance_identity (i : Fin n) (f : (Fin n → Ω) → ℝ)
             _ = μˢ := map_update_prod_pi i
       have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => (f ^ 2) (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
         hmp.integrable_comp hf2.aestronglyMeasurable |>.mpr hf2
-      convert hg_int.integral_prod_left
+      unfold condExpExceptCoord
+      simpa [Pi.pow_apply] using hg_int.integral_prod_left
     have hf2_slice_ae : ∀ᵐ x ∂μˢ, Integrable (fun y => f (Function.update x i y) ^ 2) (μs i) := by
       have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 i p.2)
                  (μˢ.prod (μs i)) μˢ := by
@@ -597,7 +601,8 @@ lemma sum_variance_condExp_le (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ)
               _ = μˢ := map_update_prod_pi i
         have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => f (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
           hmp.integrable_comp (hf.integrable one_le_two).aestronglyMeasurable |>.mpr (hf.integrable one_le_two)
-        convert hg_int.integral_prod_left
+        unfold condExpExceptCoord
+        simpa [Pi.pow_apply] using hg_int.integral_prod_left
       have hf2 := hf.integrable_sq
       have hcond_sq_int : Integrable (condExpExceptCoord (μs := μs) i (f ^ 2)) μˢ := by
         have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 i p.2)
@@ -614,7 +619,8 @@ lemma sum_variance_condExp_le (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ)
               _ = μˢ := map_update_prod_pi i
         have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => (f ^ 2) (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
           hmp.integrable_comp hf2.aestronglyMeasurable |>.mpr hf2
-        convert hg_int.integral_prod_left
+        unfold condExpExceptCoord
+        simpa [Pi.pow_apply] using hg_int.integral_prod_left
       have hf2_slice_ae : ∀ᵐ x ∂μˢ, Integrable (fun y => f (Function.update x i y) ^ 2) (μs i) := by
         have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 i p.2)
                    (μˢ.prod (μs i)) μˢ := by
@@ -810,13 +816,15 @@ lemma condExpExceptCoord_comm_ae {i j : Fin n} (hij : i ≠ j) (f : (Fin n → �
       f (Function.update (Function.update x i p.1) j p.2)) ((μs i).prod (μs j)) := by
     have := hint.prod_right_ae
     filter_upwards [this] with x hx
-    convert hx using 1
+    simpa [Function.uncurry] using hx
   filter_upwards [hslice_ae] with x hx_int
   -- Now we can apply Fubini since we have integrability
   have hfub : ∫ y, ∫ z, f (Function.update (Function.update x i y) j z) ∂(μs j) ∂(μs i) =
               ∫ z, ∫ y, f (Function.update (Function.update x i y) j z) ∂(μs i) ∂(μs j) := by
     rw [integral_integral_swap]
-    convert hx_int using 1
+    change Integrable (fun p : Ω × Ω =>
+      f (Function.update (Function.update x i p.1) j p.2)) ((μs i).prod (μs j))
+    exact hx_int
   rw [hfub]
   simp_rw [hcomm]
 
@@ -883,7 +891,8 @@ lemma jensen_sq_condExpExceptCoord (j : Fin n) (g : (Fin n → Ω) → ℝ)
           _ = μˢ := map_update_prod_pi j
     have hg2_int : Integrable (fun p : (Fin n → Ω) × Ω => (g^2) (Function.update p.1 j p.2)) (μˢ.prod (μs j)) :=
       hmp.integrable_comp hg2.aestronglyMeasurable |>.mpr hg2
-    convert hg2_int.integral_prod_left
+    unfold condExpExceptCoord
+    simpa [Pi.pow_apply] using hg2_int.integral_prod_left
 
   have hcond_int : Integrable (condExpExceptCoord (μs := μs) j g) μˢ := by
     have hmp : MeasurePreserving (fun p : (Fin n → Ω) × Ω => Function.update p.1 j p.2)
@@ -900,7 +909,8 @@ lemma jensen_sq_condExpExceptCoord (j : Fin n) (g : (Fin n → Ω) → ℝ)
           _ = μˢ := map_update_prod_pi j
     have hg_int : Integrable (fun p : (Fin n → Ω) × Ω => g (Function.update p.1 j p.2)) (μˢ.prod (μs j)) :=
       hmp.integrable_comp hg.aestronglyMeasurable |>.mpr hg
-    convert hg_int.integral_prod_left
+    unfold condExpExceptCoord
+    simpa [Pi.pow_apply] using hg_int.integral_prod_left
 
   have hcond_sq_int' : Integrable (fun x => (condExpExceptCoord (μs := μs) j g x)^2) μˢ := by
     have hf2_slice_ae' : ∀ᵐ x ∂μˢ, Integrable (fun y => (g (Function.update x j y))^2) (μs j) := by
@@ -1025,7 +1035,8 @@ lemma memLp_condExpExceptCoord (i : Fin n) (f : (Fin n → Ω) → ℝ) (hf : Me
     have hf2_prod : Integrable (fun p : (Fin n → Ω) × Ω => (f^2) (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
       hmp.integrable_comp hf2.aestronglyMeasurable |>.mpr hf2
     have hcondE_sq_int : Integrable (condExpExceptCoord (μs := μs) i (f^2)) μˢ := by
-      convert hf2_prod.integral_prod_left
+      unfold condExpExceptCoord
+      simpa [Pi.pow_apply] using hf2_prod.integral_prod_left
     -- Now use that (condExp f)² ≤ condExp(f²) ae (Jensen pointwise)
     -- First get slice integrability
     have hf_prod : Integrable (fun p : (Fin n → Ω) × Ω => f (Function.update p.1 i p.2)) (μˢ.prod (μs i)) :=
@@ -1254,7 +1265,10 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
         congr 1; ext i; fin_cases i; rfl
       have hmp := measurePreserving_funUnique (μs 0) (Fin 1)
       have hpi_map : Measure.pi (fun _ : Fin 1 => μs 0) = (μs 0).map e.symm := by
-        have h1 := hmp.map_eq
+        have h1 : Measure.map e (Measure.pi (fun _ : Fin 1 => μs 0)) = μs 0 := by
+          change Measure.map (MeasurableEquiv.funUnique (Fin 1) Ω)
+            (Measure.pi fun _ : Fin 1 => μs 0) = μs 0
+          exact hmp.map_eq
         have h2 : (Measure.map e (Measure.pi (fun _ : Fin 1 => μs 0))).map e.symm = (μs 0).map e.symm := by
           rw [h1]
         rw [MeasurableEquiv.map_symm_map] at h2
@@ -1293,7 +1307,8 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
             _ = μ_curr := map_update_prod_pi i
       have hg_int : Integrable (fun p : (Fin ((k+1)+1) → Ω) × Ω => f (Function.update p.1 i p.2)) (μ_curr.prod (μs i)) :=
         hmp.integrable_comp (hf.integrable one_le_two).aestronglyMeasurable |>.mpr (hf.integrable one_le_two)
-      convert hg_int.integral_prod_left
+      unfold condExpExceptCoord
+      simpa [Pi.pow_apply] using hg_int.integral_prod_left
 
     have hsum_nonneg : 0 ≤ ∑ i : Fin ((k+1)+1), ∫ x, (f x - condExpExceptCoord (μs := μs) i f x)^2 ∂μ_curr := by
       apply Finset.sum_nonneg
@@ -1321,7 +1336,8 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
               _ = μ_curr := map_update_prod_pi i
         have hg_int : Integrable (fun p : (Fin ((k+1)+1) → Ω) × Ω => (f ^ 2) (Function.update p.1 i p.2)) (μ_curr.prod (μs i)) :=
           hmp.integrable_comp hf2'.aestronglyMeasurable |>.mpr hf2'
-        convert hg_int.integral_prod_left
+        unfold condExpExceptCoord
+        simpa [Pi.pow_apply] using hg_int.integral_prod_left
       have hf2_slice_ae : ∀ᵐ x ∂μ_curr, Integrable (fun y => f (Function.update x i y) ^ 2) (μs i) := by
         have hmp : MeasurePreserving (fun p : (Fin ((k+1)+1) → Ω) × Ω => Function.update p.1 i p.2)
                    (μ_curr.prod (μs i)) μ_curr := by
@@ -1396,7 +1412,8 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
               _ = μ_curr := map_update_prod_pi i
         have hg_int : Integrable (fun p : (Fin ((k+1)+1) → Ω) × Ω => (f ^ 2) (Function.update p.1 i p.2)) (μ_curr.prod (μs i)) :=
           hmp.integrable_comp hf2'.aestronglyMeasurable |>.mpr hf2'
-        convert hg_int.integral_prod_left
+        unfold condExpExceptCoord
+        simpa [Pi.pow_apply] using hg_int.integral_prod_left
       have hf2_slice_ae : ∀ᵐ x ∂μ_curr, Integrable (fun y => f (Function.update x i y) ^ 2) (μs i) := by
         have hmp : MeasurePreserving (fun p : (Fin ((k+1)+1) → Ω) × Ω => Function.update p.1 i p.2)
                    (μ_curr.prod (μs i)) μ_curr := by
@@ -1562,7 +1579,8 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
                 _ = μ_curr := map_update_prod_pi j
           have hg_prod_int : Integrable (fun p : (Fin ((k+1)+1) → Ω) × Ω => g (Function.update p.1 j p.2)) (μ_curr.prod (μs j)) :=
             hmp.integrable_comp hg_int.aestronglyMeasurable |>.mpr hg_int
-          convert hg_prod_int.integral_prod_left
+          unfold condExpExceptCoord
+          simpa [Pi.pow_apply] using hg_prod_int.integral_prod_left
         have hcond_g_sq_int : Integrable (condExpExceptCoord (μs := μs) j (g ^ 2)) μ_curr := by
           have hmp : MeasurePreserving (fun p : (Fin ((k+1)+1) → Ω) × Ω => Function.update p.1 j p.2)
                      (μ_curr.prod (μs j)) μ_curr := by
@@ -1578,7 +1596,8 @@ theorem efronStein (f : (Fin n → Ω) → ℝ) (hf : MemLp f 2 μˢ) :
                 _ = μ_curr := map_update_prod_pi j
           have hg_prod_int : Integrable (fun p : (Fin ((k+1)+1) → Ω) × Ω => (g ^ 2) (Function.update p.1 j p.2)) (μ_curr.prod (μs j)) :=
             hmp.integrable_comp hg2.aestronglyMeasurable |>.mpr hg2
-          convert hg_prod_int.integral_prod_left
+          unfold condExpExceptCoord
+          simpa [Pi.pow_apply] using hg_prod_int.integral_prod_left
         have hg2_slice_ae : ∀ᵐ x ∂μ_curr, Integrable (fun y => g (Function.update x j y) ^ 2) (μs j) := by
           have hmp : MeasurePreserving (fun p : (Fin ((k+1)+1) → Ω) × Ω => Function.update p.1 j p.2)
                      (μ_curr.prod (μs j)) μ_curr := by

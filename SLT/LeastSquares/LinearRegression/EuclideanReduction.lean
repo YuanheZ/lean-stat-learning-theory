@@ -98,10 +98,11 @@ theorem dist_euclidean_eq_sqrt_n_mul_dist_empirical (hn : 0 < n)
 theorem norm_euclidean_eq_sqrt_n_mul_empiricalNorm (hn : 0 < n) (v : EmpiricalSpace n) :
     ‖empiricalToEuclidean n v‖ = Real.sqrt n * empiricalNorm n v := by
   have h := dist_euclidean_eq_sqrt_n_mul_dist_empirical hn v 0
-  simp only [dist_eq_norm] at h
+  have hzero : empiricalToEuclidean n (0 : EmpiricalSpace n) = 0 := by
+    ext i
+    rfl
+  rw [dist_eq_norm, hzero, sub_zero] at h
   convert h using 2
-  · show empiricalToEuclidean n v = empiricalToEuclidean n v - empiricalToEuclidean n 0
-    simp [empiricalToEuclidean]
   · show empiricalNorm n v = empiricalNorm n (v - (0 : EmpiricalSpace n))
     congr 1
     ext i
@@ -217,7 +218,7 @@ theorem linearCoveringNumber_eq_euclidean (hn : 0 < n)
     by_cases h : coveringNumber (s * Real.sqrt n) (empiricalToEuclidean n '' linearLocalizedBallImage n d δ x) = ⊤
     · simp [h]
     -- Otherwise, get a finite (s*√n)-net for the image
-    push_neg at h
+    push Not at h
     have hne : {m : WithTop ℕ | ∃ t : Finset (EuclideanSpace ℝ (Fin n)),
         IsENet t (s * Real.sqrt n) (empiricalToEuclidean n '' linearLocalizedBallImage n d δ x) ∧
         (t.card : WithTop ℕ) = m}.Nonempty := by
@@ -260,7 +261,7 @@ theorem linearCoveringNumber_eq_euclidean (hn : 0 < n)
   · -- coveringNumber (s*√n) (image) ≤ coveringNumber s (linearLocalizedBallImage)
     by_cases h : coveringNumber s (linearLocalizedBallImage n d δ x) = ⊤
     · simp [h]
-    push_neg at h
+    push Not at h
     have hne : {m : WithTop ℕ | ∃ t : Finset (EmpiricalSpace n),
         IsENet t s (linearLocalizedBallImage n d δ x) ∧ (t.card : WithTop ℕ) = m}.Nonempty := by
       by_contra hemp

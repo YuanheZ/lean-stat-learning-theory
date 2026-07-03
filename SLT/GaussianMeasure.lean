@@ -269,16 +269,18 @@ theorem linear_two_sided_tail_bound_stdGaussianPi (a : Fin n → ℝ) (u : ℝ)
         · exact ENNReal.add_ne_top.mpr ⟨measure_ne_top _ _, measure_ne_top _ _⟩
         · exact measure_union_le _ _
     _ ≤ exp (-u^2 / (2 * ∑ i, (a i)^2)) + exp (-u^2 / (2 * ∑ i, (a i)^2)) := by
-        apply add_le_add
-        · exact linear_tail_bound_stdGaussianPi a u hu ha
-        · -- For the negative, use symmetry: -⟨a,w⟩ = ⟨-a, w⟩
-          have ha' : ∑ i, (-a i)^2 = ∑ i, (a i)^2 := by simp
-          have h_bound := linear_tail_bound_stdGaussianPi (fun i => -a i) u hu (ha' ▸ ha)
-          simp only [ha'] at h_bound
-          convert h_bound using 2
-          congr 1
-          ext w : 1
-          simp [Finset.sum_neg_distrib]
+          apply add_le_add
+          · exact linear_tail_bound_stdGaussianPi a u hu ha
+          · -- For the negative, use symmetry: -⟨a,w⟩ = ⟨-a,w⟩
+            have ha' : ∑ i, (-a i)^2 = ∑ i, (a i)^2 := by simp
+            have h_bound := linear_tail_bound_stdGaussianPi (fun i => -a i) u hu (ha' ▸ ha)
+            have hset :
+                {w : Fin n → ℝ | u ≤ -(∑ i, a i * w i)} =
+                  {w : Fin n → ℝ | u ≤ ∑ i, (-a i) * w i} := by
+              ext w
+              simp [Finset.sum_neg_distrib]
+            rw [hset]
+            simpa [ha'] using h_bound
     _ = 2 * exp (-u^2 / (2 * ∑ i, (a i)^2)) := by ring
 
 /-! ## Expectation and Centering -/
@@ -402,7 +404,7 @@ lemma integral_eval_stdGaussianPi (i : Fin n) :
 /-- Expectation of linear combination is 0 -/
 theorem integral_linear_stdGaussianPi_eq_zero (a : Fin n → ℝ) :
     ∫ w, ∑ i, a i * w i ∂(stdGaussianPi n) = 0 := by
-  rw [integral_finset_sum]
+  rw [integral_finsetSum]
   · simp only [integral_const_mul, integral_eval_stdGaussianPi, mul_zero, Finset.sum_const_zero]
   · intro i _
     exact Integrable.const_mul (integrable_eval_stdGaussianPi i) (a i)

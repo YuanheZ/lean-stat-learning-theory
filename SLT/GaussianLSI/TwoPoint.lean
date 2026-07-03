@@ -113,7 +113,7 @@ theorem deriv_gPlus {t : ℝ} (ht : -1 < t) : deriv gPlus t = log (1 + t) + 1 :=
   -- Derivative of (1 + s) is 1
   have d1 : deriv (fun s => 1 + s) t = 1 := by
     have hd : HasDerivAt (fun s => 1 + s) 1 t := by
-      convert (hasDerivAt_id t).const_add (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_add (1 : ℝ)
     exact hd.deriv
   -- Derivative of log(1 + s) using chain rule
   have d2 : deriv (fun s => log (1 + s)) t = 1 / (1 + t) := by
@@ -135,7 +135,7 @@ theorem deriv_gMinus {t : ℝ} (ht : t < 1) : deriv gMinus t = -log (1 - t) - 1 
   -- Derivative of (1 - s) is -1
   have d1 : deriv (fun s => 1 - s) t = -1 := by
     have hd : HasDerivAt (fun s => 1 - s) (-1) t := by
-      convert (hasDerivAt_id t).const_sub (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_sub (1 : ℝ)
     exact hd.deriv
   -- Derivative of log(1 - s) using chain rule
   have d2 : deriv (fun s => log (1 - s)) t = -1 / (1 - t) := by
@@ -179,7 +179,7 @@ theorem deriv_deriv_gPlus {t : ℝ} (ht : -1 < t) : deriv (deriv gPlus) t = 1 / 
   rw [deriv.log h1 h.ne']
   have d1 : deriv (fun s => 1 + s) t = 1 := by
     have hd : HasDerivAt (fun s => 1 + s) 1 t := by
-      convert (hasDerivAt_id t).const_add (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_add (1 : ℝ)
     exact hd.deriv
   rw [d1]
 
@@ -202,7 +202,7 @@ theorem deriv_deriv_gMinus {t : ℝ} (ht : t < 1) : deriv (deriv gMinus) t = 1 /
   rw [hd_neg, deriv.log h1 h.ne']
   have d1 : deriv (fun s => 1 - s) t = -1 := by
     have hd : HasDerivAt (fun s => 1 - s) (-1) t := by
-      convert (hasDerivAt_id t).const_sub (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_sub (1 : ℝ)
     exact hd.deriv
   rw [d1]
   ring
@@ -226,11 +226,11 @@ theorem deriv2_phi {t : ℝ} (ht : t ∈ Ioo (-1 : ℝ) 1) :
   rw [h_deriv_sub, deriv.log hd1 h1.ne', deriv.log hd2 h2.ne']
   have dd1 : deriv (fun s => 1 + s) t = 1 := by
     have hd : HasDerivAt (fun s => 1 + s) 1 t := by
-      convert (hasDerivAt_id t).const_add (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_add (1 : ℝ)
     exact hd.deriv
   have dd2 : deriv (fun s => 1 - s) t = -1 := by
     have hd : HasDerivAt (fun s => 1 - s) (-1) t := by
-      convert (hasDerivAt_id t).const_sub (1 : ℝ) using 2
+      simpa [id] using (hasDerivAt_id t).const_sub (1 : ℝ)
     exact hd.deriv
   rw [dd1, dd2]
   have h3 : (1 : ℝ) - t ^ 2 = (1 + t) * (1 - t) := by ring

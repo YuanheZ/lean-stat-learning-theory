@@ -172,7 +172,9 @@ lemma mollify_tendsto_pointwise {n : ℕ} {g : E n → ℝ} (hg_cont : Continuou
       have h_mol_one : ∀ y : E 0, stdMollifierPi 0 ε y = 1 := by
         intro y
         unfold stdMollifierPi
-        simp only [Fintype.univ_ofIsEmpty, Finset.prod_empty]
+        rw [Finset.prod_eq_one]
+        intro i _
+        exact Fin.elim0 i
       conv_lhs =>
         arg 1; arg 1; arg 2; ext y
         rw [h_mol_one y, mul_one]
@@ -416,7 +418,7 @@ lemma eLpNorm_tendsto_zero_of_tendstoUniformly_restrict {n : ℕ} {f : ℕ → E
   · use 0
     intro i _
     rw [Measure.restrict_zero_set hμ_zero, eLpNorm_measure_zero]
-    exact zero_le ε
+    exact zero_le
   · by_cases hε_top : ε = ⊤
     · use 0; intro i _; rw [hε_top]; exact le_top
     have h_sqrt_pos : 0 < (volume s).toReal.sqrt :=
@@ -502,7 +504,7 @@ lemma eLpNorm_tendsto_zero_of_tendstoUniformly_general {n : ℕ} {μ : Measure (
   · use 0
     intro i _
     rw [Measure.restrict_eq_zero.mpr hμ_zero, eLpNorm_measure_zero]
-    exact zero_le ε
+    exact zero_le
   · by_cases hε_top : ε = ⊤
     · use 0; intro i _; rw [hε_top]; exact le_top
     have h_sqrt_pos : 0 < (μ s).toReal.sqrt :=
@@ -841,7 +843,7 @@ lemma mollify_L2_convergence_gaussian_continuous {n : ℕ} {g : E n → ℝ} {R 
               rw [Metric.mem_closedBall, dist_zero_right] at hxy_ball
               have hx_norm : ‖x‖ > 2 * R + 1 := by
                 rw [hK_def, Metric.closedBall, Set.mem_setOf] at hx
-                push_neg at hx
+                push Not at hx
                 rw [dist_zero_right] at hx
                 exact hx
               have hy_small : ‖y‖ < 1 := by
@@ -996,9 +998,9 @@ lemma cutoff_product_fderiv_continuous {f : E n → ℝ} {R : ℝ} (hR : 0 < R)
       (smoothCutoffR R x) • (fderiv ℝ f x) + (f x) • (fderiv ℝ (smoothCutoffR R) x) := by
     intro x
     ext v
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+    simp only [add_apply, smul_apply]
     rw [fderiv_mul (hf_diff x) (hχ_diff x)]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp only [add_apply, smul_apply, smul_eq_mul]
     ring
   simp_rw [h_eq]
   apply Continuous.add
@@ -1137,7 +1139,7 @@ lemma gradient_L2_convergence_gaussian {g : E n → ℝ} {R : ℝ} (hR : 0 < R)
         simp [hv]
       rw [this, norm_zero]
       exact hδ
-    · push_neg at hn
+    · push Not at hn
       let b := EuclideanSpace.basisFun (Fin n) ℝ
       have h_fi_cont : ∀ i, Continuous (fun y => fderiv ℝ g y (b i)) := fun i => h_fv_cont (b i)
       set K' := K + Metric.closedBall (0 : E n) 1
@@ -1199,7 +1201,7 @@ lemma gradient_L2_convergence_gaussian {g : E n → ℝ} {R : ℝ} (hR : 0 < R)
           have h_basis_diff : ∀ i, (fderiv ℝ (mollify ε g) x - fderiv ℝ g x) (b i) =
               mollify ε (fun y => fderiv ℝ g y (b i)) x - fderiv ℝ g x (b i) := by
             intro i
-            simp only [ContinuousLinearMap.sub_apply, h_commute i]
+            simp only [sub_apply, h_commute i]
           simp_rw [h_basis_diff]
           have h1 : |∑ i : Fin n, b.repr v i *
                   (mollify ε (fun y => fderiv ℝ g y (b i)) x - fderiv ℝ g x (b i))|

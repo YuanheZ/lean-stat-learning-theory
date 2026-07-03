@@ -146,7 +146,7 @@ lemma optimalU_mul_Y (Y : Ω → ℝ) (mean : ℝ) (hY_nn : 0 ≤ Y) (ω : Ω) :
   · -- Y ω > 0
     simp only [EReal.coe_mul]
   · -- Y ω ≤ 0 and Y ω ≥ 0 (from hY_nn), so Y ω = 0
-    push_neg at hY
+    push Not at hY
     have hY_zero : Y ω = 0 := le_antisymm hY (hY_nn ω)
     simp only [hY_zero, EReal.coe_zero, mul_zero]
 

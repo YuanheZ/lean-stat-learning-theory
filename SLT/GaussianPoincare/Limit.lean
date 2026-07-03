@@ -55,7 +55,19 @@ lemma tendsto_pow_exp_of_isLittleO {f : ℕ → ℂ} (t : ℂ)
   rw [← tendsto_sub_nhds_zero_iff]
   apply hf.tendsto_inv_smul_nhds_zero.congr'
   filter_upwards [eventually_ne_atTop 0] with n h0
-  simpa [mul_sub] using mul_div_cancel₀ t (mod_cast h0)
+  have hn0R : (n : ℝ) ≠ 0 := by
+    exact_mod_cast h0
+  have hn0C : (n : ℂ) ≠ 0 := by
+    exact_mod_cast h0
+  have hcoef : (((1 / (n : ℝ))⁻¹ : ℝ) : ℂ) = (n : ℂ) := by
+    field_simp [hn0R]
+    norm_num
+  calc
+    (1 / (n : ℝ))⁻¹ • (g n - t / (n : ℂ))
+        = (((1 / (n : ℝ))⁻¹ : ℝ) : ℂ) * (g n - t / (n : ℂ)) := by
+          exact RCLike.real_smul_eq_coe_mul ((1 / (n : ℝ))⁻¹) (g n - t / (n : ℂ))
+    _ = (n : ℂ) * (g n - t / (n : ℂ)) := by rw [hcoef]
+    _ = (n : ℂ) * g n - t := by rw [mul_sub, mul_div_cancel₀ t hn0C]
 
 /-- The characteristic function of the sum of `n` i.i.d. variables with characteristic function `f`
 is `f ^ n`. We express this in terms of the pushforward of the product measure by summation. -/
@@ -90,18 +102,23 @@ lemma charFun_rademacherMeasure (t : ℝ) : charFun rademacherMeasure t = Real.c
     simp only [ENNReal.toReal_inv, ENNReal.toReal_ofNat, one_div, ofReal_neg,
       ofReal_one, neg_mul, mul_neg, mul_one]
     -- Goal: 2⁻¹ • exp(-it) + 2⁻¹ • exp(it) = cos(t) where 2⁻¹ : ℝ
-    -- Convert ℝ smul on ℂ to multiplication using `real_smul`
-    simp only [real_smul]
-    -- Goal: ↑(2⁻¹) * exp(it) + ↑(2⁻¹) * exp(-it) = cos(t)
-    rw [add_comm, ← mul_add]
-    -- Use Complex.two_cos: 2 * cos x = exp(x*I) + exp(-x*I)
-    rw [ofReal_inv]
-    have h := Complex.two_cos (↑t)
-    rw [neg_mul] at h
-    rw [← h]
-    simp only [ofReal_ofNat]
-    rw [show ((2 : ℂ))⁻¹ * ((2 : ℂ) * Complex.cos ↑t) = Complex.cos ↑t by field_simp]
-    exact (Complex.ofReal_cos t).symm
+    calc
+      (2 : ℝ)⁻¹ • Complex.exp (-(↑t * I)) + (2 : ℝ)⁻¹ • Complex.exp (↑t * I)
+          = Complex.ofReal ((2 : ℝ)⁻¹) * Complex.exp (-(↑t * I)) +
+              Complex.ofReal ((2 : ℝ)⁻¹) * Complex.exp (↑t * I) := by
+            exact congrArg₂ (fun x y : ℂ => x + y)
+              (RCLike.real_smul_eq_coe_mul ((2 : ℝ)⁻¹) (Complex.exp (-(↑t * I))))
+              (RCLike.real_smul_eq_coe_mul ((2 : ℝ)⁻¹) (Complex.exp (↑t * I)))
+      _ = ↑(Real.cos t) := by
+        rw [add_comm, ← mul_add]
+        -- Use Complex.two_cos: 2 * cos x = exp(x*I) + exp(-x*I)
+        rw [ofReal_inv]
+        have h := Complex.two_cos (↑t)
+        rw [neg_mul] at h
+        rw [← h]
+        simp only [ofReal_ofNat]
+        rw [show ((2 : ℂ))⁻¹ * ((2 : ℂ) * Complex.cos ↑t) = Complex.cos ↑t by field_simp]
+        exact (Complex.ofReal_cos t).symm
   · exact Integrable.smul_measure (integrable_dirac (by simp : ‖_‖ₑ < ⊤)) (by simp)
   · exact Integrable.smul_measure (integrable_dirac (by simp : ‖_‖ₑ < ⊤)) (by simp)
 

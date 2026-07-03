@@ -56,7 +56,8 @@ private def phi (t : ℝ) : ℝ := t * Real.log t
 
 /-- The entropy density φ(t) = t log t is continuous. -/
 lemma phi_continuous : Continuous phi := by
-  simpa [phi] using Real.continuous_mul_log
+  change Continuous (fun t : ℝ => t * Real.log t)
+  exact Real.continuous_mul_log
 
 /-- The function phi(t) = t * log(t) is bounded below by -1/e for t ≥ 0.
     This is proven using the fact that the minimum occurs at t = 1/e. -/
@@ -71,7 +72,7 @@ lemma mul_log_ge_neg_inv_exp (t : ℝ) (ht : 0 ≤ t) : -(1 / Real.exp 1) ≤ t 
       have hprod_pos : t * Real.log t > 0 := mul_pos ht_pos hlog_pos
       have hexp_inv_pos : 1 / Real.exp 1 > 0 := div_pos one_pos hexp_pos
       linarith
-    · push_neg at ht1
+    · push Not at ht1
       let u := Real.log t
       have ht_eq : t = Real.exp u := (Real.exp_log ht_pos).symm
       have hkey : u * Real.exp u ≥ -Real.exp (-1) := by
@@ -178,21 +179,21 @@ lemma tendsto_eLpNorm_sq_sub_of_tendsto_L2
     filter_upwards [h_eventually_small] with k hk
     have h_meas1 : AEStronglyMeasurable (fun x => g k x - f x) μ :=
       (hg_cont k).aestronglyMeasurable.sub hf_cont.aestronglyMeasurable
-    have h_meas2 : AEStronglyMeasurable (fun x => (2 : ℝ) * f x) μ := by
-      simpa using (hf_cont.aestronglyMeasurable.const_smul (2 : ℝ))
+    have h_meas2 : AEStronglyMeasurable (fun x => (2 : ℝ) * f x) μ :=
+      hf_cont.aestronglyMeasurable.const_mul (2 : ℝ)
     have h_tri := eLpNorm_add_le h_meas1 h_meas2 (by norm_num : (1 : ℝ≥0∞) ≤ 2)
     have h_eq : (fun x => g k x + f x) = fun x => (g k x - f x) + (2 : ℝ) * f x := by
       funext x
       ring
     have h_scale : eLpNorm (fun x => (2 : ℝ) * f x) 2 μ = 2 * eLpNorm f 2 μ := by
       have h_scale' :
-          eLpNorm (fun x => (2 : ℝ) • f x) 2 μ = ‖(2 : ℝ)‖ₑ * eLpNorm f 2 μ := by
+          eLpNorm ((2 : ℝ) • f) 2 μ = ‖(2 : ℝ)‖ₑ * eLpNorm f 2 μ := by
         simpa using
           (eLpNorm_const_smul (c := (2 : ℝ)) (f := f) (p := (2 : ℝ≥0∞)) (μ := μ))
       have h_norm : (‖(2 : ℝ)‖ₑ : ℝ≥0∞) = 2 := by
         rw [Real.enorm_eq_ofReal (by norm_num : (0 : ℝ) ≤ 2)]
         norm_num
-      have h_eq : (fun x => (2 : ℝ) * f x) = fun x => (2 : ℝ) • f x := by
+      have h_eq : (fun x => (2 : ℝ) * f x) = (2 : ℝ) • f := by
         funext x
         simp
       simpa [h_eq, h_norm] using h_scale'
@@ -201,7 +202,12 @@ lemma tendsto_eLpNorm_sq_sub_of_tendsto_L2
       have h_tri'' :
           eLpNorm (fun x => (g k x - f x) + (2 : ℝ) * f x) 2 μ ≤
             eLpNorm (fun x => g k x - f x) 2 μ + eLpNorm (fun x => (2 : ℝ) * f x) 2 μ := by
-        simpa [Pi.add_apply] using h_tri
+        have h_add :
+            ((fun x => g k x - f x) + fun x => (2 : ℝ) * f x) =
+              fun x => (g k x - f x) + (2 : ℝ) * f x := by
+          funext x
+          rfl
+        simpa [h_add] using h_tri
       simpa [h_eq, h_scale] using h_tri''
     have h_bound :
         eLpNorm (fun x => g k x - f x) 2 μ + 2 * eLpNorm f 2 μ ≤
@@ -331,7 +337,8 @@ lemma tendsto_integral_norm_fderiv_sq_of_sobolev (f : ℝ → ℝ) (g : ℕ → 
   have h_int_g : ∀ᶠ k in atTop, Integrable (fun x => ‖fderiv ℝ (g k) x‖^2) μ :=
     Eventually.of_forall (fun k => (hg_mem k).integrable_sq)
   have h_int_tend :=
-    tendsto_integral_of_L1' (f := fun x => ‖fderiv ℝ f x‖^2) h_int_f h_int_g h_sq_tend
+    tendsto_integral_of_L1' (f := fun x => ‖fderiv ℝ f x‖^2)
+      h_int_f.aestronglyMeasurable h_int_g h_sq_tend
   simpa using h_int_tend
 
 /-- Shifted entropy density φ(t) + 1/e ≥ 0 for t ≥ 0. -/
@@ -439,7 +446,8 @@ theorem gaussian_logSobolev_W12_real {f : ℝ → ℝ}
     Eventually.of_forall h_int_qk
   have h_m_tend :
       Tendsto (fun k => ∫ x, qk k x ∂μ) atTop (nhds (∫ x, q x ∂μ)) := by
-    have h_int_tend := tendsto_integral_of_L1' (f := q) h_int_q h_int_qk_event h_L1
+    have h_int_tend := tendsto_integral_of_L1' (f := q)
+      h_int_q.aestronglyMeasurable h_int_qk_event h_L1
     simpa [q, qk] using h_int_tend
   have h_mlog_tend :
       Tendsto (fun k =>
@@ -549,7 +557,8 @@ theorem gaussian_logSobolev_W12_real {f : ℝ → ℝ}
     have h_int_g : ∀ᶠ k in atTop, Integrable (fun x => ‖fderiv ℝ (g k) x‖^2) μ :=
       Eventually.of_forall (fun k => (hg_mem k).integrable_sq)
     have h_int_tend :=
-      tendsto_integral_of_L1' (f := fun x => ‖fderiv ℝ f x‖^2) h_int_f h_int_g h_norm_tend
+      tendsto_integral_of_L1' (f := fun x => ‖fderiv ℝ f x‖^2)
+        h_int_f.aestronglyMeasurable h_int_g h_norm_tend
     simpa using h_int_tend
   have h_grad_bound : ∀ᶠ k in atTop,
       ∫ x, ‖fderiv ℝ (g k) x‖^2 ∂μ ≤ ∫ x, ‖fderiv ℝ f x‖^2 ∂μ + 1 := by
@@ -600,7 +609,11 @@ theorem gaussian_logSobolev_W12_real {f : ℝ → ℝ}
     have h_le :
         Filter.liminf a atTop ≤ Filter.liminf a (map φ atTop) :=
       liminf_le_liminf_of_le h_map h_a_bdd_below h_cobdd_subseq
-    simpa [liminf_comp] using h_le
+    calc
+      L = Filter.liminf a atTop := rfl
+      _ ≤ Filter.liminf a (map φ atTop) := h_le
+      _ = Filter.liminf (a ∘ φ) atTop := (Filter.liminf_comp a φ atTop).symm
+      _ = Filter.liminf (fun n => a (φ n)) atTop := rfl
   have h_bdd_below_subseq : IsBoundedUnder (· ≥ ·) atTop (fun n => a (φ n)) := by
     obtain ⟨B, hB⟩ := IsBoundedUnder.eventually_ge h_a_bdd_below
     have hB' : ∀ᶠ n in atTop, B ≤ a (φ n) :=
@@ -871,7 +884,13 @@ theorem gaussian_logSobolev_W12_real {f : ℝ → ℝ}
         (u := a)
         (v := fun k => -((∫ x, qk k x ∂μ) * Real.log (∫ x, qk k x ∂μ)))
         h_bdd_below h_bdd_above h_bdd_below' h_cobdd
-      simpa [sub_eq_add_neg] using h
+      have ha : (fun k => a k) = a := rfl
+      have h_add :
+          (a + fun k => -((∫ x, qk k x ∂μ) * Real.log (∫ x, qk k x ∂μ))) =
+            fun k => a k + -((∫ x, qk k x ∂μ) * Real.log (∫ x, qk k x ∂μ)) := by
+        funext k
+        rfl
+      simpa [ha, h_add, sub_eq_add_neg] using h
     have h_phi :
         LogSobolev.entropy μ q =
           ∫ x, phi (q x) ∂μ -

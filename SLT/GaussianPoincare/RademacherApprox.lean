@@ -185,7 +185,9 @@ lemma IndepRademacherSeq.norm_le_one (seq : IndepRademacherSeq Ω P) (i : ℕ) :
     rw [ae_add_measure_iff]
     have hmeas : MeasurableSet {x : ℝ | ‖x‖ ≤ 1} := by measurability
     constructor <;> {
-      rw [Measure.ae_smul_measure_iff (by norm_num : (1/2 : ℝ≥0∞) ≠ 0)]
+      have hhalf : (1 / 2 : ℝ≥0∞) ≠ 0 := by
+        exact ne_of_gt <| ENNReal.half_pos (by simp)
+      rw [Measure.ae_ennreal_smul_measure_iff hhalf]
       rw [ae_dirac_iff hmeas]
       simp
     }
@@ -205,7 +207,7 @@ theorem rademacherSum_expectation_zero (seq : IndepRademacherSeq Ω P) (n : ℕ)
   rw [MeasureTheory.integral_const_mul]
   -- Each ε_i has expectation 0, so the sum has expectation 0
   have h_sum_zero : ∫ ω, (∑ i : Fin n, seq.ε i ω) ∂(↑P) = 0 := by
-    rw [integral_finset_sum Finset.univ]
+    rw [integral_finsetSum Finset.univ]
     · apply Finset.sum_eq_zero
       intro i _
       exact (seq.isRademacher i).expectation_zero (seq.measurable i)
@@ -232,7 +234,7 @@ theorem rademacherSum_variance_one (seq : IndepRademacherSeq Ω P) (n : ℕ) (hn
   -- Goal: E[(∑ i, ε_i)^2] = n
   -- Use sq to express power 2, then expand as double sum
   simp only [sq, Finset.sum_mul_sum]
-  rw [integral_finset_sum Finset.univ]
+  rw [integral_finsetSum Finset.univ]
   · -- Split into diagonal (i=j) and off-diagonal (i≠j) terms
     -- Off-diagonal terms vanish by independence
     have h_diag : ∀ i : Fin n, ∫ ω, (seq.ε i ω) * (seq.ε i ω) ∂(↑P) = 1 := by
@@ -256,7 +258,7 @@ theorem rademacherSum_variance_one (seq : IndepRademacherSeq Ω P) (n : ℕ) (hn
           = ∑ i : Fin n, ∑ j : Fin n, ∫ ω, seq.ε i ω * seq.ε j ω ∂(↑P) := by
               congr 1
               ext i
-              rw [integral_finset_sum Finset.univ]
+              rw [integral_finsetSum Finset.univ]
               intro j _
               exact seq.integrable_mul i j
         _ = ∑ i : Fin n, (∫ ω, seq.ε i ω * seq.ε i ω ∂(↑P) +
@@ -281,7 +283,7 @@ theorem rademacherSum_variance_one (seq : IndepRademacherSeq Ω P) (n : ℕ) (hn
         _ = n := by simp
     exact h_sum.symm
   · intro i _
-    apply integrable_finset_sum Finset.univ
+    apply integrable_finsetSum Finset.univ
     intro j _
     exact seq.integrable_mul i j
 

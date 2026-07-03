@@ -124,7 +124,9 @@ lemma smoothCutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) smoothCutoff := by
     (ContDiffBumpBase.ofInnerProductSpace ℝ).smooth.contDiffAt hnhds
   have h_comp : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : ℝ => ((2 : ℝ), y)) x :=
     (contDiffAt_const (c := (2 : ℝ))).prodMk contDiffAt_id
-  simpa [smoothCutoff, Function.uncurry] using h_at.comp x h_comp
+  change ContDiffAt ℝ (⊤ : ℕ∞)
+    (fun y : ℝ => Function.uncurry (ContDiffBumpBase.ofInnerProductSpace ℝ).toFun ((2 : ℝ), y)) x
+  exact h_at.comp x h_comp
 
 lemma smoothCutoff_eq_one_of_le {x : ℝ} (hx : |x| ≤ 1) : smoothCutoff x = 1 := by
   have h : (1 : ℝ) ≤ 2 - |x| := by linarith
@@ -222,7 +224,7 @@ lemma smoothCutoffR_contDiff {R : ℝ} (hR : 0 < R) : ContDiff ℝ (⊤ : ℕ∞
     filter_upwards [h_eq] with y hy
     simp [hy]
   · -- Case: ‖x‖ ≥ R, so x ≠ 0 and norm is smooth at x (EuclideanSpace has InnerProductSpace)
-    push_neg at hx
+    push Not at hx
     have hx_ne : x ≠ 0 := by
       intro h
       rw [h, norm_zero] at hx
@@ -241,7 +243,7 @@ lemma smoothCutoffR_support_subset {R : ℝ} (hR : 0 < R) :
   intro x hx
   simp only [Metric.mem_closedBall, dist_zero_right]
   by_contra h
-  push_neg at h
+  push Not at h
   have : smoothCutoffR R x = 0 := smoothCutoffR_eq_zero_of_norm_ge hR h.le
   simp only [Function.mem_support, this, ne_eq, not_true_eq_false] at hx
 
@@ -422,7 +424,7 @@ lemma stdMollifierKernel_eq_expNegInvGlue (x : ℝ) :
   · -- When |x| ≥ 1, we have 1 - x² ≤ 0, so expNegInvGlue gives 0
     simp only [h, ↓reduceIte]
     have habs_sq : 1 ≤ |x|^2 := by
-      push_neg at h
+      push Not at h
       nlinarith [h, abs_nonneg x]
     have hx2 : 1 ≤ x^2 := by rwa [sq_abs] at habs_sq
     have hnonpos : 1 - x^2 ≤ 0 := by linarith
@@ -546,12 +548,12 @@ lemma stdMollifierEps_support {ε : ℝ} (hε : 0 < ε) :
     by_cases hxneg : x < 0
     · -- x < 0, so |x| = -x, and we need ε ≤ -x, i.e., x ≤ -ε
       rw [abs_of_neg hxneg]
-      by_contra hc; push_neg at hc
+      by_contra hc; push Not at hc
       -- hc : -x < ε, i.e., -ε < x
       have : ε ≤ x := h (by linarith)
       linarith
     · -- x ≥ 0, so |x| = x, and h gives ε ≤ x when -ε < x
-      push_neg at hxneg
+      push Not at hxneg
       rw [abs_of_nonneg hxneg]
       exact h (by linarith)
   exact hx (stdMollifierEps_eq_zero_of_abs_ge hε habs)
@@ -598,7 +600,7 @@ lemma stdMollifierPi_hasCompactSupport {ε : ℝ} (hε : 0 < ε) :
   · exact Metric.isClosed_closedBall
   · intro x hx
     simp only [Metric.mem_closedBall, dist_zero_right] at hx
-    push_neg at hx
+    push Not at hx
     unfold stdMollifierPi
     -- If ‖x‖ > ε√n, by pigeonhole some |x i| ≥ ε
     -- Proof: if all |x i| < ε, then ‖x‖² = ∑ᵢ (x i)² < n * ε² = (ε√n)², contradiction
@@ -611,7 +613,7 @@ lemma stdMollifierPi_hasCompactSupport {ε : ℝ} (hε : 0 < ε) :
       exact absurd hx (lt_irrefl 0)
     · have hexists : ∃ i : Fin n, ε ≤ |x i| := by
         by_contra h
-        push_neg at h
+        push Not at h
         have hbound : ‖x‖^2 ≤ n * ε^2 := by
           have hnorm_sq : ‖x‖^2 = ∑ i : Fin n, ‖x i‖^2 := EuclideanSpace.norm_sq_eq x
           rw [hnorm_sq]
@@ -659,7 +661,7 @@ lemma stdMollifierPi_tsupport_subset {ε : ℝ} (hε : 0 < ε) :
       exact absurd hy (lt_irrefl _)
     · have hexists : ∃ i : Fin n, ε ≤ |y i| := by
         by_contra h
-        push_neg at h
+        push Not at h
         have hbound : ‖y‖^2 ≤ n * ε^2 := by
           have hnorm_sq : ‖y‖^2 = ∑ i : Fin n, ‖y i‖^2 := EuclideanSpace.norm_sq_eq y
           rw [hnorm_sq]

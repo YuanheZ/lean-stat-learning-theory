@@ -79,7 +79,7 @@ lemma linear_empiricalProcess_sup_aestronglyMeasurable (hn : 0 < n)
       apply h_cont.comp
       unfold empiricalProcess
       apply continuous_const.mul
-      apply continuous_finset_sum _ (fun i _ => continuous_apply i |>.mul continuous_const)
+      apply continuous_finsetSum _ (fun i _ => continuous_apply i |>.mul continuous_const)
     · have heq2 : (fun w => ⨆ (_ : g ∈ localizedBall (linearPredictorClass d) δ x), transform (empiricalProcess n x g w)) =
           fun _ => (0 : ℝ) := by ext w; rw [ciSup_neg hg, Real.sSup_empty]
       rw [heq2]; exact lowerSemicontinuous_const

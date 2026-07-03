@@ -162,7 +162,7 @@ theorem bernoulli_integral_eq_sum {n : ℕ} (f : (Fin n → Bool) → ℝ) :
     ∫ ε, f ε ∂(bernoulliUniform n) = (∑ ε : Fin n → Bool, f ε) / 2^n := by
   unfold bernoulliUniform
   rw [integral_smul_measure]
-  rw [integral_fintype _ (Integrable.of_finite)]
+  rw [MeasureTheory.integral_fintype (Integrable.of_finite : Integrable f Measure.count)]
   rw [card_fin_bool n]
   simp only [Nat.cast_pow, Nat.cast_ofNat, smul_eq_mul, count_real_singleton, one_mul]
   rw [ENNReal.toReal_inv, ENNReal.toReal_pow, ENNReal.toReal_ofNat]
@@ -413,7 +413,7 @@ theorem integral_gradientNormSq_eq_sum {n : ℕ} (h : (Fin n → Bool) → ℝ) 
     ∫ ε, gradientNormSq n h ε ∂(bernoulliUniform n) =
     ∑ j : Fin n, ∫ ε, (h ε - h (flipCoord j ε))^2 ∂(bernoulliUniform n) := by
   simp only [gradientNormSq]
-  rw [integral_finset_sum]
+  rw [integral_finsetSum]
   intro j _
   apply Integrable.of_finite
 
@@ -674,6 +674,9 @@ theorem binaryKLfromUniform_convexOn :
   have h3 : ConvexOn ℝ (Set.Icc (0 : ℝ) 1) (fun p => Real.log 2 + (-Real.binEntropy p)) :=
     h2.add h1
   convert h3 using 1
+  ext p
+  unfold binaryKLfromUniform
+  ring
 
 /-- The midpoint inequality for binaryKLfromUniform -/
 theorem binaryKLfromUniform_midpoint_le {p₀ p₁ : ℝ}
@@ -1068,7 +1071,9 @@ theorem twoPointEntropyCoord_condMeanSqrt_le {n : ℕ} (j : Fin n)
   -- Now apply twoPointEnt_midpoint_convex
   have h_conv := twoPointEnt_midpoint_convex a₀ b₀ a₁ b₁ ha₀_nn hb₀_nn ha₁_nn hb₁_nn
   -- h_conv: twoPointEnt ((a₀+b₀)/2) ((a₁+b₁)/2) ≤ (twoPointEnt a₀ a₁ + twoPointEnt b₀ b₁) / 2
-  convert h_conv using 2
+  change twoPointEnt ((a₀ + b₀) / 2) ((a₁ + b₁) / 2) ≤
+    (twoPointEnt a₀ a₁ + twoPointEnt b₀ b₁) / 2
+  exact h_conv
 
 /-- Han's inequality for the hypercube: entropy is bounded by sum of conditional entropies.
 
@@ -1200,7 +1205,7 @@ theorem entropy_le_half_gradient {n : ℕ} (h : (Fin n → Bool) → ℝ) :
         intro j _
         exact avg_twoPointEntropyCoord_le j h
     _ = ∫ ε, ∑ j : Fin n, (h ε - h (flipCoord j ε))^2 / 2 ∂(bernoulliUniform n) := by
-        rw [← integral_finset_sum]
+        rw [← integral_finsetSum]
         intro j _
         exact Integrable.of_finite
     _ = ∫ ε, (∑ j : Fin n, (h ε - h (flipCoord j ε))^2) / 2 ∂(bernoulliUniform n) := by
@@ -1285,9 +1290,8 @@ theorem rademacherSumProd_flip_eq_shifted {n : ℕ} [NeZero n] (j : Fin n)
     calc ∑ i : Fin n, Function.update x j (-x j) i
         = Function.update x j (-x j) j +
             ∑ i ∈ Finset.univ.erase j, Function.update x j (-x j) i := by
-          rw [Finset.sum_eq_sum_diff_singleton_add (Finset.mem_univ j)]
-          simp only [Finset.sdiff_singleton_eq_erase]
-          ring
+          exact (Finset.add_sum_erase Finset.univ
+            (fun i : Fin n => Function.update x j (-x j) i) (Finset.mem_univ j)).symm
       _ = -x j + ∑ i ∈ Finset.univ.erase j, x i := by
           rw [h1]
           congr 1
@@ -1295,8 +1299,10 @@ theorem rademacherSumProd_flip_eq_shifted {n : ℕ} [NeZero n] (j : Fin n)
           intro i hi
           exact h2 i (Finset.mem_of_mem_erase hi) (Finset.ne_of_mem_erase hi)
       _ = -x j + (∑ i : Fin n, x i - x j) := by
-          rw [Finset.sum_eq_sum_diff_singleton_add (Finset.mem_univ j)]
-          simp only [Finset.sdiff_singleton_eq_erase, add_sub_cancel_right]
+          have hsum_erase : ∑ i ∈ Finset.univ.erase j, x i = ∑ i : Fin n, x i - x j := by
+            have hsplit := Finset.add_sum_erase Finset.univ (fun i : Fin n => x i) (Finset.mem_univ j)
+            linarith
+          rw [hsum_erase]
       _ = (∑ i : Fin n, x i) - 2 * x j := by ring
   rw [hsum]
   unfold rademacherSumProd
@@ -1310,7 +1316,7 @@ theorem measurable_toRademacher {n : ℕ} : Measurable (toRademacher (n := n)) :
 theorem continuous_rademacherSumProd (n : ℕ) : Continuous (rademacherSumProd n) := by
   unfold rademacherSumProd
   have hsum : Continuous (fun x : RademacherSpace n => ∑ i : Fin n, x i) := by
-    apply continuous_finset_sum
+    apply continuous_finsetSum
     intro i _
     exact continuous_apply i
   exact hsum.const_smul ((√n)⁻¹)
@@ -1426,9 +1432,9 @@ theorem bernoulliUniform_map_toRademacher {n : ℕ} :
       -- μ s = μ (s ∩ range) = ∑_{ε} μ (s ∩ {toRademacher ε})
       have heq : (rademacherProductMeasure (n+1)) s =
           (rademacherProductMeasure (n+1)) (s ∩ Set.range toRademacher) := by
-        rw [← measure_inter_add_diff s (Set.finite_range toRademacher).measurableSet]
+        rw [← measure_inter_add_sdiff s (Set.finite_range toRademacher).measurableSet]
         have h0 : (rademacherProductMeasure (n+1)) (s \ Set.range toRademacher) = 0 := by
-          apply measure_mono_null (Set.diff_subset_compl _ _) hsupp
+          apply measure_mono_null (Set.sdiff_subset_compl _ _) hsupp
         rw [h0, add_zero]
       rw [heq]
       -- range toRademacher = ⋃ ε, {toRademacher ε}
@@ -1527,7 +1533,7 @@ theorem gradient_eq_sum_shifted {n : ℕ} [NeZero n] {f : ℝ → ℝ} (hf : Con
   -- Step 1: Expand gradientNormSq
   simp only [gradientNormSq]
   -- Step 2: Exchange integral and sum (integral of sum = sum of integrals for finite sums)
-  rw [integral_finset_sum Finset.univ (fun j _ => Integrable.of_finite)]
+  rw [integral_finsetSum Finset.univ (fun j _ => Integrable.of_finite)]
   -- Step 3: For each term, show the integrand is the same after using flip-to-shifted correspondence
   congr 1
   ext j

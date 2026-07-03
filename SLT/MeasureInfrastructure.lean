@@ -91,7 +91,7 @@ theorem measure_finset_sup_ge_le_sum {ι : Type*} {μ : Measure Ω}
     simp only [mem_setOf_eq] at hω
     rw [mem_iUnion₂]
     by_contra h_neg
-    push_neg at h_neg
+    push Not at h_neg
     have h_bound : ∀ i ∈ s, X i ω < u := by
       intro i hi
       simp only [mem_setOf_eq, not_le] at h_neg
@@ -216,7 +216,7 @@ theorem expected_max_subGaussian {ι : Type*}
 
   -- Step 1: Integrability of sup'
   have hsup_int : Integrable (fun ω => s.sup' hs (fun i => X i ω)) μ := by
-    refine Integrable.mono (integrable_finset_sum s (fun i hi => (hX_int_basic i hi).abs)) ?_ ?_
+    refine Integrable.mono (integrable_finsetSum s (fun i hi => (hX_int_basic i hi).abs)) ?_ ?_
     · convert (Finset.measurable_sup' hs (fun i hi => hX_meas i hi)).aestronglyMeasurable using 1
       funext ω
       simp only [Finset.sup'_apply]
@@ -238,7 +238,7 @@ theorem expected_max_subGaussian {ι : Type*}
 
   -- Step 3: Sum bound via soft-max
   have hsum_int : Integrable (fun ω => ∑ i ∈ s, exp (t_opt * X i ω)) μ :=
-    integrable_finset_sum s (fun i hi => hX_int_exp i hi t_opt)
+    integrable_finsetSum s (fun i hi => hX_int_exp i hi t_opt)
 
   have hsup_exp_bound : ∫ ω, exp (t_opt * s.sup' hs (fun i => X i ω)) ∂μ ≤
       n * exp (t_opt^2 * σ^2 / 2) := by
@@ -248,7 +248,7 @@ theorem expected_max_subGaussian {ι : Type*}
           · exact ae_of_all μ (fun ω => (exp_pos _).le)
           · exact hsum_int
           · exact ae_of_all μ (fun ω => exp_mul_sup'_le_sum hs (fun i => X i ω) t_opt)
-      _ = ∑ i ∈ s, ∫ ω, exp (t_opt * X i ω) ∂μ := integral_finset_sum s (fun i hi => hX_int_exp i hi t_opt)
+      _ = ∑ i ∈ s, ∫ ω, exp (t_opt * X i ω) ∂μ := integral_finsetSum s (fun i hi => hX_int_exp i hi t_opt)
       _ ≤ ∑ i ∈ s, exp (t_opt^2 * σ^2 / 2) := Finset.sum_le_sum (fun i hi => hMGF_bound i hi)
       _ = n * exp (t_opt^2 * σ^2 / 2) := by simp [Finset.sum_const, hn_def]
 

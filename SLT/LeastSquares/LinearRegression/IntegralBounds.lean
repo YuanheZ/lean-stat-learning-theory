@@ -175,10 +175,7 @@ lemma integral_sqrt_neg_log_Ioo :
       (-Real.exp (-x)) (Set.Ioi 0) x := by
     intro x _
     have : HasDerivAt (fun t => Real.exp (-t)) (-Real.exp (-x)) x := by
-      have h := Real.hasDerivAt_exp (-x)
-      have : HasDerivAt (fun t => -t) (-1 : ℝ) x := by simp [hasDerivAt_neg']
-      convert h.comp x this using 1
-      ring
+      simpa [mul_comm] using (hasDerivAt_neg x).exp
     exact this.hasDerivWithinAt
   have hinj : Set.InjOn (fun t => Real.exp (-t)) (Set.Ioi 0) := by
     intro x hx y hy hxy
@@ -218,10 +215,7 @@ lemma integrableOn_sqrt_neg_log :
       measurableSet_Ioi
       (fun x _ => by
         have : HasDerivAt (fun t => Real.exp (-t)) (-Real.exp (-x)) x := by
-          have h := Real.hasDerivAt_exp (-x)
-          have : HasDerivAt (fun t => -t) (-1 : ℝ) x := by simp [hasDerivAt_neg']
-          convert h.comp x this using 1
-          ring
+          simpa [mul_comm] using (hasDerivAt_neg x).exp
         exact this.hasDerivWithinAt)
       (fun x _ y _ hxy => by
         have := Real.exp_injective hxy
@@ -451,7 +445,7 @@ theorem intermediate_integral_bound
       Real.sqrt d * Real.sqrt (Real.log (1 + 2 / u)) := fun u => by
     by_cases hlog : 0 ≤ Real.log (1 + 2 / u)
     · exact Real.sqrt_mul (Nat.cast_nonneg d) _
-    · push_neg at hlog
+    · push Not at hlog
       have h1 : Real.sqrt (d * Real.log (1 + 2 / u)) = 0 := by
         apply Real.sqrt_eq_zero'.mpr
         exact mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg d) (le_of_lt hlog)

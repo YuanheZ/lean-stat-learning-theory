@@ -175,7 +175,7 @@ lemma linear_empiricalSphere_nonempty (hn : 0 < n) (hd : 0 < d)
   let e₀ : EuclideanSpace ℝ (Fin d) := EuclideanSpace.single j₀ 1
   have he₀_ne : e₀ ≠ 0 := by
     intro h
-    rw [EuclideanSpace.single_eq_zero_iff] at h
+    rw [PiLp.single_eq_zero_iff] at h
     exact one_ne_zero h
   -- Since hinj is injective, designMatrixMul x e₀ ≠ 0
   have hXe₀_ne : designMatrixMul x e₀ ≠ 0 := by
@@ -249,12 +249,14 @@ lemma linear_bddAbove_at_radius (hn : 0 < n)
   let hx : EuclideanSpace ℝ (Fin n) := (WithLp.equiv 2 (Fin n → ℝ)).symm (fun i => h (x i))
   -- |n⁻¹ * ∑ w_i h(x_i)| ≤ n⁻¹ * √n * ‖w‖ * u
   have h_sum_eq : ∑ i, w i * h (x i) = @inner ℝ _ _ w' hx := by
-    simp only [w', hx, EuclideanSpace.inner_eq_star_dotProduct]
-    simp only [WithLp.equiv_symm_apply_ofLp]
-    -- For real numbers, star w = w (trivial star)
-    have h_star : star w = w := by ext i; simp [star_trivial]
-    rw [h_star, dotProduct_comm]
-    rfl
+    have h_inner_eq : @inner ℝ _ _ w' hx = ∑ i, h (x i) * w i := by
+      simp [w', hx, PiLp.inner_apply]
+    calc
+      ∑ i, w i * h (x i) = ∑ i, h (x i) * w i := by
+        refine Finset.sum_congr rfl ?_
+        intro i _
+        ring
+      _ = @inner ℝ _ _ w' hx := h_inner_eq.symm
   have h_sum_bound : |∑ i, w i * h (x i)| ≤ Real.sqrt n * ‖w'‖ * u := by
     rw [h_sum_eq]
     calc |@inner ℝ _ _ w' hx|

@@ -155,7 +155,8 @@ lemma condExpFirstK_nonneg_ae (k : Fin (n + 1)) (f : (Fin n → Ω) → ℝ)
   filter_upwards [h_fubini] with x hx
   apply integral_nonneg_of_ae
   -- Goal: ∀ᵐ y ∂μˢ, 0 ≤ f (fun j => if j.val < k.val then x j else y j)
-  convert hx using 1
+  change ∀ᵐ y ∂μˢ, 0 ≤ f (fun j : Fin n => if j.val < k.val then x j else y j)
+  exact hx
 
 /-- Integrability of condExpFirstK: if f is integrable, so is condExpFirstK k f.
     This follows from Fubini and the triangle inequality. -/
@@ -293,12 +294,12 @@ lemma condExpFirstK_mul_log_integrable (k : Fin (n + 1)) (f : (Fin n → Ω) →
         exact Real.abs_log_mul_self_lt (T x) hTx_pos hTx_le_one
       linarith [abs_nonneg (h x)]
     · -- T x = 0 (since T x ≥ 0 and ¬(0 < T x))
-      push_neg at hTx_pos
+      push Not at hTx_pos
       have hTx_zero : T x = 0 := le_antisymm hTx_pos hT_x_nn
       simp only [hTx_zero, zero_mul, abs_zero]
       linarith [abs_nonneg (h x)]
   · -- Case: T x > 1: T * log T ≥ 0 and T * log T ≤ h, so |T * log T| ≤ |h|
-    push_neg at hTx_le_one
+    push Not at hTx_le_one
     have hTlog_nn : 0 ≤ T x * log (T x) := Real.mul_log_nonneg (le_of_lt hTx_le_one)
     have : |T x * log (T x)| = T x * log (T x) := abs_of_nonneg hTlog_nn
     rw [this]
@@ -403,7 +404,7 @@ lemma f_mul_log_condExpFirstK_integrable (k : Fin (n + 1)) (f : (Fin n → Ω) �
             -- Convert nnnorm to ofReal norm
             have hnorm_eq : ∀ y, (‖f (φ (x, y)) * log (T x)‖₊ : ℝ≥0∞) =
                 ENNReal.ofReal ‖f (φ (x, y)) * log (T x)‖ := fun y => by
-              rw [← enorm_eq_nnnorm, ← ofReal_norm_eq_enorm]
+              rw [← enorm_eq_nnnorm, ← ofReal_norm]
             simp_rw [hnorm_eq]
             rw [ofReal_integral_eq_lintegral_ofReal]
             · -- Integrability of the norm function
@@ -419,7 +420,7 @@ lemma f_mul_log_condExpFirstK_integrable (k : Fin (n + 1)) (f : (Fin n → Ω) �
       _ = ∫⁻ x, ‖T x * log (T x)‖₊ ∂μˢ := by
             apply lintegral_congr_ae
             filter_upwards with x
-            rw [ofReal_norm_eq_enorm, enorm_eq_nnnorm]
+            rw [ofReal_norm, enorm_eq_nnnorm]
       _ < ⊤ := hTlogT_int.2
 
   -- Show that the function is dominated by something integrable
@@ -504,7 +505,7 @@ theorem condExpFirstK_tower_of_integrable_slice (k : Fin n) (f : (Fin n → Ω) 
       by_cases hj_eq : j = k
       · -- j = k: j.val = k.val < k.val + 1
         simp only [hj_eq, Nat.lt_succ_self, ↓reduceIte, Nat.lt_irrefl]
-        rw [hj_eq, Function.update_self]
+        exact Function.update_self k z x
       · -- j ≠ k and j.val ≥ k.val, so j.val > k.val, so j.val ≥ k.val + 1
         have hj_gt : j.val > k.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt hj_lt) (fun h => hj_eq (Fin.ext h.symm))
         have hj_ge_succ : ¬(j.val < k.val + 1) := Nat.not_lt_of_ge hj_gt
@@ -1012,7 +1013,7 @@ lemma condExpFirstK_pos_on_slice_ae (i : Fin n) (f : (Fin n → Ω) → ℝ)
     intro hf_pos
     simp only [bad, not_and, not_lt] at hy
     by_contra hT_le
-    push_neg at hT_le
+    push Not at hT_le
     have hT_eq_zero : condExpFirstK (μs := μs) i.succ f (Function.update x i y) = 0 :=
       le_antisymm hT_le hT_nonneg
     have hf_le := hy hT_eq_zero
@@ -1337,7 +1338,7 @@ theorem entropy_subadditive (f : (Fin n → Ω) → ℝ)
         exact Integrable.sub
           (f_mul_log_condExpFirstK_integrable i.succ f hf_meas hf_nn hf_int hf_log_int)
           (f_mul_log_condExpExceptCoord_condExpFirstK_integrable i f hf_meas hf_nn hf_int hf_log_int)
-      rw [integral_finset_sum Finset.univ (fun i _ => h_term_int i)]
+      rw [integral_finsetSum Finset.univ (fun i _ => h_term_int i)]
 
     have h_ent_eq : LogSobolev.entropy μˢ f =
         ∫ x, f x * (log (f x) - log (∫ z, f z ∂μˢ)) ∂μˢ := by

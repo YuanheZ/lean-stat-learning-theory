@@ -310,15 +310,12 @@ lemma maureyPMF_mean_coord (x : Fin n → EuclideanSpace ℝ (Fin d))
   -- Sum equals (1/√n) * ⟨θ, x_i⟩
   -- Now LHS = ∑ j, 1 / √n * (θ j * (x i) j)
   rw [PiLp.inner_apply]
-  simp only [RCLike.inner_apply, RCLike.conj_to_real]
-  -- Now RHS = 1 / √n * ∑ j, (x i) j * θ j
-  -- Factor out 1/√n from LHS
+  have h_inner : ∀ a b : ℝ, inner ℝ a b = a * b := by
+    intro a b
+    change b * star a = a * b
+    simp [mul_comm]
+  simp only [h_inner]
   rw [← Finset.mul_sum]
-  -- Now goal: 1 / √n * ∑ j, θ j * (x i) j = 1 / √n * ∑ j, (x i) j * θ j
-  congr 1
-  apply Finset.sum_congr rfl
-  intro j _
-  ring
 
 /-- Sum of squared coordinates bound for empirical average -/
 lemma maureyPMF_variance_bound (x : Fin n → EuclideanSpace ℝ (Fin d))
@@ -456,7 +453,8 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
         show empiricalNorm n ((0 : EmpiricalSpace n) - target) = empiricalNorm n target
         have hsub : (0 : EmpiricalSpace n) - target = -target := by
           funext i; exact zero_sub (target i)
-        rw [hsub, empiricalNorm_neg]
+        rw [hsub]
+        exact empiricalNorm_neg n target
       rw [hdist_emp]
       have htarget_le : empiricalNorm n target ≤ l1norm θ := by
         have hinner := empiricalNorm_le_l1norm_of_columnNormBound x θ hcol hn
@@ -511,7 +509,8 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
         show empiricalNorm n ((0 : EmpiricalSpace n) - target) = empiricalNorm n target
         have hsub : (0 : EmpiricalSpace n) - target = -target := by
           funext i; exact zero_sub (target i)
-        rw [hsub, empiricalNorm_neg]
+        rw [hsub]
+        exact empiricalNorm_neg n target
       rw [hdist_emp]
       have htarget_le : empiricalNorm n target ≤ l1norm θ := by
         have hinner := empiricalNorm_le_l1norm_of_columnNormBound x θ hcol hn
@@ -557,7 +556,7 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
           have hbound : ∃ f' : Fin k → Option (Fin d × Bool), distSq f' ≤ R * l1norm θ / k := by
             -- Contrapositive: if all distSq > B then E > B, contradicting E ≤ B.
             by_contra h
-            push_neg at h
+            push Not at h
             -- h: ∀ f', R * l1norm θ / k < distSq f'. Show E > B (contradiction with E ≤ B).
             have hPosProb : ∃ f : Fin k → Option (Fin d × Bool),
                 (productPMFWeight θ R hθ k f).toReal > 0 := by
@@ -578,13 +577,13 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
                 constructor
                 · exact hPnone
                 · rw [lt_top_iff_ne_top]; exact PMF.apply_ne_top (maureyPMF θ R hθ) none
-              · push_neg at hθR
+              · push Not at hθR
                 have hθR' : l1norm θ = R := le_antisymm hθ hθR
                 have hθ_pos : 0 < l1norm θ := by rw [hθR']; exact hR
                 have hθ_ne : l1norm θ ≠ 0 := ne_of_gt hθ_pos
                 have hexists_j : ∃ j : Fin d, θ j ≠ 0 := by
                   by_contra h
-                  push_neg at h
+                  push Not at h
                   have : l1norm θ = 0 := by
                     unfold l1norm
                     apply Finset.sum_eq_zero
@@ -624,7 +623,7 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
               have hl1_nonneg : 0 ≤ l1norm θ := Finset.sum_nonneg (s := Finset.univ) (fun i _ => norm_nonneg (θ i))
               have hR_nonneg : 0 ≤ R := le_of_lt hR
               have hE_eq : E = ∫ f, distSq f ∂ν := by
-                rw [MeasureTheory.integral_fintype _ (Integrable.of_finite)]
+                rw [MeasureTheory.integral_fintype (Integrable.of_finite : Integrable distSq ν)]
                 simp only [E, smul_eq_mul]
                 congr 1
                 ext f
@@ -668,8 +667,8 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
                   have hexpand : ∀ f, (∑ l, Y l f)^2 = ∑ l₁, ∑ l₂, Y l₁ f * Y l₂ f := by
                     intro f; rw [sq, Finset.sum_mul_sum]
                   simp_rw [hexpand]
-                  rw [MeasureTheory.integral_finset_sum _ (fun _ _ => Integrable.of_finite)]
-                  simp_rw [MeasureTheory.integral_finset_sum _ (fun _ _ => Integrable.of_finite)]
+                  rw [MeasureTheory.integral_finsetSum _ (fun _ _ => Integrable.of_finite)]
+                  simp_rw [MeasureTheory.integral_finsetSum _ (fun _ _ => Integrable.of_finite)]
                   have hindep : ProbabilityTheory.iIndepFun (fun l f => Y l f) ν := by
                     simp only [Y]
                     have hμprob' : ∀ _ : Fin k, IsProbabilityMeasure μ := fun _ => hμprob
@@ -768,7 +767,7 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
                       exact hvar_le
                   _ = (1 / k : ℝ) * ∫ o, ∑ i : Fin n, (maureyVec x R o i)^2 ∂μ := by
                       congr 1
-                      rw [MeasureTheory.integral_finset_sum _ (fun _ _ => Integrable.of_finite)]
+                      rw [MeasureTheory.integral_finsetSum _ (fun _ _ => Integrable.of_finite)]
                   _ ≤ (1 / k : ℝ) * (R * l1norm θ) := by
                       apply mul_le_mul_of_nonneg_left _ (by positivity)
                       have hvar := maureyPMF_variance_bound x θ hR hθ hcol hn
@@ -782,7 +781,7 @@ lemma maurey_exists_good_sample (x : Fin n → EuclideanSpace ℝ (Fin d))
                     rw [MeasureTheory.integral_const_mul]
                 _ = (1 / n : ℝ) * ∑ i : Fin n, ∫ f, (maureyAvg x R k f i - target i)^2 ∂ν := by
                     congr 1
-                    rw [MeasureTheory.integral_finset_sum _ (fun _ _ => Integrable.of_finite)]
+                    rw [MeasureTheory.integral_finsetSum _ (fun _ _ => Integrable.of_finite)]
                 _ ≤ (1 / n : ℝ) * (R * l1norm θ / k) := by
                     apply mul_le_mul_of_nonneg_left hsum_var_bound (by positivity)
                 _ ≤ 1 * (R * l1norm θ / k) := by
@@ -909,7 +908,8 @@ lemma exists_maureyAvg_close (x : Fin n → EuclideanSpace ℝ (Fin d))
         show empiricalNorm n ((0 : EmpiricalSpace n) - target) = empiricalNorm n target
         have : (0 : EmpiricalSpace n) - target = -target := by
           funext i; exact zero_sub (target i)
-        rw [this, empiricalNorm_neg]
+        rw [this]
+        exact empiricalNorm_neg n target
       have htarget_le : empiricalNorm n target ≤ l1norm θ := by
         have hinner := empiricalNorm_le_l1norm_of_columnNormBound x θ hcol hn
         have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr hn

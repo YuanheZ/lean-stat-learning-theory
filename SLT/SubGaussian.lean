@@ -4,12 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yuanhe Zhang, Jason D. Lee, Fanghui Liu
 -/
 import SLT.MeasureInfrastructure
-import Mathlib.Topology.MetricSpace.Basic
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Probability.Moments.Basic
-import Mathlib.Probability.Moments.IntegrableExpMul
-import Mathlib.Probability.Moments.MGFAnalytic
+import Mathlib.Probability.Moments.SubGaussian
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.Topology.Order.OrderClosed
 
 /-!
 # Sub-Gaussian Processes
@@ -19,6 +16,9 @@ entropy integral bound.
 
 ## Main definitions
 
+* `IsSubGaussian`: A scalar real random variable with Mathlib's sub-Gaussian MGF bound.
+* `subGaussianPsi2Norm`: the least MGF sub-Gaussian scale, the ψ₂ scale used by
+  the HDP-style Hanson-Wright wrapper.
 * `IsSubGaussianProcess`: A stochastic process indexed by a pseudo-metric space
   satisfies the sub-Gaussian MGF bound for increments.
 * `IsSubGaussianProcess'`: Equivalent formulation using `mgf` directly.
@@ -29,19 +29,367 @@ entropy integral bound.
 * `subGaussian_tail_bound`: Two-sided tail bound P(|X_s - X_t| ≥ u).
 * `gaussian_tail_integral`: The Gaussian tail integral ∫₀^∞ 2·exp(-r²/(2τ²)) dr = τ·√(2π).
 * `ae_eq_zero_of_mgf_le_one`: MGF ≤ 1 for all λ implies Y = 0 a.e.
+* `IsSubGaussian.integrable`: Scalar sub-Gaussian variables are integrable.
+* `hasSubgaussianMGF_of_subGaussianPsi2Norm_le`: Extract an MGF certificate at any
+  scale above the ψ₂ infimum.
+* `hasSubGaussianPsi2Bound_subGaussianPsi2Norm_of_pos`: The positive ψ₂ infimum
+  is an admissible scale.
+* `bernstein_two_sided_of_cgf_bound`: Bernstein-style two-sided concentration from a local
+  quadratic CGF bound.
+* `integrable_ciSup_abs_of_fintype_subGaussian`: Finite suprema of absolute values of
+  sub-Gaussian families are integrable.
 * `subGaussian_first_moment_bound`: E[|X_s - X_t|] ≤ √(2π)·σ·d(s,t).
 * `subGaussian_finite_max_bound`: E[max_{t∈T} X_t] ≤ σ·diam(T)·√(2 log|T|).
 
 -/
 
-open MeasureTheory ProbabilityTheory Real Set Metric
-open scoped ENNReal BigOperators
+open MeasureTheory ProbabilityTheory Real Set Metric Filter
+open scoped ENNReal BigOperators NNReal Topology
 
 noncomputable section
 
 universe u v
 
 variable {Ω : Type u} [MeasurableSpace Ω] {A : Type v} [PseudoMetricSpace A]
+
+/-- A real random variable is sub-Gaussian with variance proxy `σ_sq` if its moment
+generating function is bounded by the corresponding Gaussian moment generating function. -/
+def IsSubGaussian {Ω : Type*} [MeasurableSpace Ω] (X : Ω → ℝ) (σ_sq : ℝ)
+    (μ : Measure Ω) : Prop :=
+  ∃ h : 0 ≤ σ_sq, HasSubgaussianMGF X ⟨σ_sq, h⟩ μ
+
+/-- Monotonicity of the MGF sub-Gaussian parameter. -/
+lemma hasSubgaussianMGF_mono_param {Ω : Type*} [MeasurableSpace Ω] {X : Ω → ℝ}
+    {μ : Measure Ω}
+    {c d : ℝ≥0} (h : HasSubgaussianMGF X c μ) (hcd : (c : ℝ) ≤ d) :
+    HasSubgaussianMGF X d μ where
+  integrable_exp_mul t := h.integrable_exp_mul t
+  mgf_le t := by
+    have hmul : (c : ℝ) * t ^ 2 ≤ (d : ℝ) * t ^ 2 :=
+      mul_le_mul_of_nonneg_right hcd (sq_nonneg t)
+    calc
+      mgf X μ t ≤ exp ((c : ℝ) * t ^ 2 / 2) := h.mgf_le t
+      _ ≤ exp ((d : ℝ) * t ^ 2 / 2) := exp_le_exp.mpr (by linarith)
+
+/-- An admissible ψ₂/MGF scale for a real random variable.
+
+This is the MGF version of the sub-Gaussian ψ₂ scale used in this development:
+`K` is admissible when `X` has Gaussian MGF control with variance proxy `K²`.
+For centered variables this scale is equivalent, up to universal constants, to
+the Orlicz ψ₂ norm used in HDP. -/
+def HasSubGaussianPsi2Bound {Ω : Type*} [MeasurableSpace Ω] (X : Ω → ℝ)
+    (μ : Measure Ω) (K : ℝ) : Prop :=
+  0 < K ∧ HasSubgaussianMGF X ⟨K ^ 2, sq_nonneg K⟩ μ
+
+/-- The ψ₂ sub-Gaussian scale as the infimum of admissible MGF scales. -/
+def subGaussianPsi2Norm {Ω : Type*} [MeasurableSpace Ω] (X : Ω → ℝ)
+    (μ : Measure Ω) : ℝ :=
+  sInf {K : ℝ | HasSubGaussianPsi2Bound X μ K}
+
+/-- Finiteness of the ψ₂ scale: there is at least one admissible MGF scale. -/
+def HasFiniteSubGaussianPsi2Norm {Ω : Type*} [MeasurableSpace Ω] (X : Ω → ℝ)
+    (μ : Measure Ω) : Prop :=
+  ∃ K : ℝ, HasSubGaussianPsi2Bound X μ K
+
+lemma subGaussianPsi2Norm_nonneg {Ω : Type*} [MeasurableSpace Ω] {X : Ω → ℝ}
+    {μ : Measure Ω} (hfin : HasFiniteSubGaussianPsi2Norm X μ) :
+    0 ≤ subGaussianPsi2Norm X μ := by
+  exact le_csInf hfin fun K hK => hK.1.le
+
+lemma exists_hasSubGaussianPsi2Bound_lt {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {μ : Measure Ω} {R : ℝ}
+    (hfin : HasFiniteSubGaussianPsi2Norm X μ)
+    (hR : subGaussianPsi2Norm X μ < R) :
+    ∃ K : ℝ, HasSubGaussianPsi2Bound X μ K ∧ K < R := by
+  let S : Set ℝ := {K : ℝ | HasSubGaussianPsi2Bound X μ K}
+  have hne : S.Nonempty := hfin
+  by_contra h
+  push Not at h
+  have hR_le : R ≤ sInf S := le_csInf hne fun K hK => h K hK
+  exact not_lt_of_ge hR_le (by simpa [subGaussianPsi2Norm, S] using hR)
+
+lemma hasSubgaussianMGF_of_subGaussianPsi2Norm_lt {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {μ : Measure Ω} {R : ℝ}
+    (hfin : HasFiniteSubGaussianPsi2Norm X μ)
+    (hR : subGaussianPsi2Norm X μ < R) :
+    HasSubgaussianMGF X ⟨R ^ 2, sq_nonneg R⟩ μ := by
+  obtain ⟨K, hK, hKR⟩ := exists_hasSubGaussianPsi2Bound_lt hfin hR
+  have hRpos : 0 < R := lt_trans hK.1 hKR
+  have hsq : K ^ 2 ≤ R ^ 2 :=
+    (sq_le_sq₀ hK.1.le hRpos.le).2 hKR.le
+  exact hasSubgaussianMGF_mono_param hK.2 (by
+    change K ^ 2 ≤ R ^ 2
+    exact hsq)
+
+lemma hasSubgaussianMGF_of_subGaussianPsi2Norm_le {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {μ : Measure Ω} {R : ℝ}
+    (hfin : HasFiniteSubGaussianPsi2Norm X μ) (hR : subGaussianPsi2Norm X μ ≤ R) :
+    HasSubgaussianMGF X ⟨R ^ 2, sq_nonneg R⟩ μ where
+  integrable_exp_mul t := by
+    have hnorm_nonneg : 0 ≤ subGaussianPsi2Norm X μ :=
+      subGaussianPsi2Norm_nonneg hfin
+    have hlt : subGaussianPsi2Norm X μ < R + 1 := by linarith
+    exact (hasSubgaussianMGF_of_subGaussianPsi2Norm_lt hfin hlt).integrable_exp_mul t
+  mgf_le t := by
+    have hlim_const :
+        Tendsto (fun _ : ℝ => mgf X μ t) (𝓝[>] (0 : ℝ)) (𝓝 (mgf X μ t)) :=
+      tendsto_const_nhds
+    have hlim_bound :
+        Tendsto
+          (fun ε : ℝ =>
+            exp ((((⟨(R + ε) ^ 2, sq_nonneg (R + ε)⟩ : ℝ≥0) : ℝ) * t ^ 2) / 2))
+          (𝓝[>] (0 : ℝ))
+          (𝓝 (exp ((((⟨R ^ 2, sq_nonneg R⟩ : ℝ≥0) : ℝ) * t ^ 2) / 2))) := by
+      have hcont :
+          ContinuousAt (fun ε : ℝ => exp (((R + ε) ^ 2) * t ^ 2 / 2)) 0 := by
+        fun_prop
+      simpa only [NNReal.coe_mk, add_zero] using hcont.tendsto.mono_left nhdsWithin_le_nhds
+    have hev :
+        (fun _ : ℝ => mgf X μ t) ≤ᶠ[𝓝[>] (0 : ℝ)]
+          fun ε =>
+            exp ((((⟨(R + ε) ^ 2, sq_nonneg (R + ε)⟩ : ℝ≥0) : ℝ) * t ^ 2) / 2) := by
+      filter_upwards [self_mem_nhdsWithin] with ε hε
+      have hεpos : 0 < ε := by simpa using hε
+      have hlt : subGaussianPsi2Norm X μ < R + ε := by linarith
+      exact (hasSubgaussianMGF_of_subGaussianPsi2Norm_lt hfin hlt).mgf_le t
+    exact le_of_tendsto_of_tendsto hlim_const hlim_bound hev
+
+lemma hasSubGaussianPsi2Bound_subGaussianPsi2Norm_of_pos {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {μ : Measure Ω} (hfin : HasFiniteSubGaussianPsi2Norm X μ)
+    (hpos : 0 < subGaussianPsi2Norm X μ) :
+    HasSubGaussianPsi2Bound X μ (subGaussianPsi2Norm X μ) :=
+  ⟨hpos, hasSubgaussianMGF_of_subGaussianPsi2Norm_le hfin le_rfl⟩
+
+/-- A one-sided Bernstein tail bound from a local quadratic CGF estimate. -/
+theorem bernstein_one_sided_of_cgf_bound {Ω : Type*} [MeasurableSpace Ω]
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {Y : Ω → ℝ} {v b C t : ℝ}
+    (hC : 0 < C) (hv : 0 < v) (hb : 0 < b)
+    (hcgf : ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ → cgf Y μ l ≤ C * l ^ 2 * v)
+    (hint : ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ →
+      Integrable (fun ω => exp (l * Y ω)) μ) (ht : 0 ≤ t) :
+    (μ {ω | t ≤ Y ω}).toReal ≤
+      exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) := by
+  rcases eq_or_lt_of_le ht with rfl | ht_pos
+  · calc (μ {ω | 0 ≤ Y ω}).toReal
+      _ ≤ (1 : ℝ) := ENNReal.toReal_mono ENNReal.one_ne_top prob_le_one
+      _ = exp (-(1 / (4 * C)) * min (0 ^ 2 / v) (0 / b)) := by simp
+  · set l : ℝ := min (t / (2 * C * v)) ((2 * C * b)⁻¹) with hl_def
+    have hden_v : 0 < 2 * C * v := by positivity
+    have hden_b : 0 < 2 * C * b := by positivity
+    have hl_nonneg : 0 ≤ l := by
+      rw [hl_def]
+      exact le_min (div_nonneg ht (le_of_lt hden_v)) (inv_nonneg.mpr (le_of_lt hden_b))
+    have hl_domain : |l| ≤ (2 * C * b)⁻¹ := by
+      rw [abs_of_nonneg hl_nonneg, hl_def]
+      exact min_le_right _ _
+    have hl_le_v : l ≤ t / (2 * C * v) := by
+      rw [hl_def]
+      exact min_le_left _ _
+    have hl_mul_le_t : l * (2 * C * v) ≤ t := by
+      rwa [le_div_iff₀ hden_v] at hl_le_v
+    have hquad_le : C * l ^ 2 * v ≤ l * t / 2 := by
+      nlinarith [hl_mul_le_t, hl_nonneg, hC.le, hv.le]
+    have h_exp_to_half : -l * t + C * l ^ 2 * v ≤ -(l * t / 2) := by
+      linarith
+    have h_rate :
+        l * t / 2 = (1 / (4 * C)) * min (t ^ 2 / v) (t / b) := by
+      by_cases hcase : t / (2 * C * v) ≤ (2 * C * b)⁻¹
+      · have htb_le_v : t * b ≤ v := by
+          rw [inv_eq_one_div] at hcase
+          rw [div_le_div_iff₀ hden_v hden_b] at hcase
+          nlinarith [hcase, hC, hb]
+        have hmin : min (t ^ 2 / v) (t / b) = t ^ 2 / v := by
+          rw [min_eq_left]
+          rw [div_le_div_iff₀ hv hb]
+          nlinarith [htb_le_v, ht_pos]
+        rw [hl_def, min_eq_left hcase, hmin]
+        field_simp [hC.ne', hv.ne']
+        ring
+      · have hcase' : (2 * C * b)⁻¹ ≤ t / (2 * C * v) := le_of_not_ge hcase
+        have hv_le_tb : v ≤ t * b := by
+          rw [inv_eq_one_div] at hcase'
+          rw [div_le_div_iff₀ hden_b hden_v] at hcase'
+          nlinarith [hcase', hC, hv]
+        have hmin : min (t ^ 2 / v) (t / b) = t / b := by
+          rw [min_eq_right]
+          rw [div_le_div_iff₀ hb hv]
+          nlinarith [hv_le_tb, ht_pos]
+        rw [hl_def, min_eq_right hcase', hmin]
+        field_simp [hC.ne', hb.ne']
+        ring
+    have h_chernoff := chernoff_bound_cgf hl_nonneg (hint l hl_domain)
+      (μ := μ) (X := Y) (ε := t)
+    calc (μ {ω | t ≤ Y ω}).toReal
+      _ ≤ exp (-l * t + cgf Y μ l) := h_chernoff
+      _ ≤ exp (-l * t + C * l ^ 2 * v) := by
+        exact exp_le_exp.mpr (by linarith [hcgf l hl_domain])
+      _ ≤ exp (-(l * t / 2)) := exp_le_exp.mpr h_exp_to_half
+      _ = exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) := by
+        rw [h_rate]
+        ring_nf
+
+/-- A two-sided Bernstein tail bound from a local quadratic CGF estimate. -/
+theorem bernstein_two_sided_of_cgf_bound {Ω : Type*} [MeasurableSpace Ω]
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {Y : Ω → ℝ} {v b C t : ℝ}
+    (hC : 0 < C) (hv : 0 < v) (hb : 0 < b)
+    (hcgf : ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ → cgf Y μ l ≤ C * l ^ 2 * v)
+    (hint : ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ →
+      Integrable (fun ω => exp (l * Y ω)) μ) (ht : 0 ≤ t) :
+    (μ {ω | t ≤ |Y ω|}).toReal ≤
+      2 * exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) := by
+  have hpos := bernstein_one_sided_of_cgf_bound hC hv hb hcgf hint ht
+  have hcgf_neg :
+      ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ →
+        cgf (fun ω => -Y ω) μ l ≤ C * l ^ 2 * v := by
+    intro l hl
+    have h_eq : cgf (fun ω => -Y ω) μ l = cgf Y μ (-l) := by
+      unfold cgf mgf
+      congr 1
+      apply integral_congr_ae
+      filter_upwards with ω
+      congr 1
+      ring
+    rw [h_eq]
+    have hl' : |-l| ≤ (2 * C * b)⁻¹ := by simpa [abs_neg] using hl
+    simpa using hcgf (-l) hl'
+  have hint_neg : ∀ l : ℝ, |l| ≤ (2 * C * b)⁻¹ →
+      Integrable (fun ω => exp (l * (-Y ω))) μ := by
+    intro l hl
+    convert hint (-l) (by simpa [abs_neg] using hl) using 1
+    ext ω
+    ring_nf
+  have hneg := bernstein_one_sided_of_cgf_bound hC hv hb hcgf_neg hint_neg ht
+  have h_subset :
+      {ω | t ≤ |Y ω|} ⊆ {ω | t ≤ Y ω} ∪ {ω | t ≤ -Y ω} := by
+    intro ω hω
+    simp only [Set.mem_setOf_eq, Set.mem_union] at hω ⊢
+    rcases le_or_gt 0 (Y ω) with hY | hY
+    · left
+      simpa [abs_of_nonneg hY] using hω
+    · right
+      simpa [abs_of_neg hY] using hω
+  calc (μ {ω | t ≤ |Y ω|}).toReal
+      ≤ (μ ({ω | t ≤ Y ω} ∪ {ω | t ≤ -Y ω})).toReal := by
+        exact ENNReal.toReal_mono (measure_ne_top μ _) (measure_mono h_subset)
+    _ ≤ (μ {ω | t ≤ Y ω}).toReal + (μ {ω | t ≤ -Y ω}).toReal := by
+        rw [← ENNReal.toReal_add (measure_ne_top μ _) (measure_ne_top μ _)]
+        exact ENNReal.toReal_mono
+          (ENNReal.add_ne_top.mpr ⟨measure_ne_top μ _, measure_ne_top μ _⟩)
+          (measure_union_le _ _)
+    _ ≤ exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) +
+        exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) := by
+        exact add_le_add hpos hneg
+    _ = 2 * exp (-(1 / (4 * C)) * min (t ^ 2 / v) (t / b)) := by ring
+
+/-- Maximum coordinate ψ₂ scale for a finite random vector. It is `0` for the
+empty index type. -/
+def maxSubGaussianPsi2Norm {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+    (X : Fin n → Ω → ℝ) (μ : Measure Ω) : ℝ := by
+  classical
+  exact if h : (Finset.univ : Finset (Fin n)).Nonempty then
+    (Finset.univ : Finset (Fin n)).sup' h fun i => subGaussianPsi2Norm (X i) μ
+  else 0
+
+lemma subGaussianPsi2Norm_le_maxSubGaussianPsi2Norm {Ω : Type*}
+    [MeasurableSpace Ω] {n : ℕ} {X : Fin n → Ω → ℝ} {μ : Measure Ω}
+    (i : Fin n) :
+    subGaussianPsi2Norm (X i) μ ≤ maxSubGaussianPsi2Norm X μ := by
+  classical
+  unfold maxSubGaussianPsi2Norm
+  rw [dif_pos (show (Finset.univ : Finset (Fin n)).Nonempty from
+    ⟨i, Finset.mem_univ i⟩)]
+  exact Finset.le_sup' (f := fun i => subGaussianPsi2Norm (X i) μ) (Finset.mem_univ i)
+
+/-- A sub-Gaussian random variable has integrable exponential tilts. -/
+lemma IsSubGaussian.integrable_exp_mul {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {σ_sq : ℝ} {μ : Measure Ω} [IsFiniteMeasure μ]
+    (h_sg : IsSubGaussian X σ_sq μ) (t : ℝ) :
+    Integrable (fun x => Real.exp (t * X x)) μ := by
+  obtain ⟨_, h_mgf⟩ := h_sg
+  exact h_mgf.integrable_exp_mul t
+
+/-- Compatibility name for exponential integrability of sub-Gaussian random variables. -/
+lemma sub_gaussian_integrable {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {σ_sq : ℝ} {μ : Measure Ω} [IsFiniteMeasure μ]
+    (h_sg : IsSubGaussian X σ_sq μ) (t : ℝ) :
+    Integrable (fun x => Real.exp (t * X x)) μ :=
+  h_sg.integrable_exp_mul t
+
+/-- A sub-Gaussian real random variable is integrable. -/
+lemma IsSubGaussian.integrable {Ω : Type*} [MeasurableSpace Ω]
+    {X : Ω → ℝ} {σ_sq : ℝ} {μ : Measure Ω} [IsFiniteMeasure μ]
+    (h_sg : IsSubGaussian X σ_sq μ) :
+    Integrable X μ := by
+  obtain ⟨_, h_mgf⟩ := h_sg
+  have h_exp_pos := h_mgf.integrable_exp_mul 1
+  have h_exp_neg := h_mgf.integrable_exp_mul (-1)
+  refine' Integrable.mono' _ _ _
+  · exact fun ω => Real.exp (X ω) + Real.exp (-X ω)
+  · exact Integrable.add (by simpa using h_exp_pos) (by simpa using h_exp_neg)
+  · exact h_mgf.aestronglyMeasurable
+  · filter_upwards [] with ω using
+      abs_le.mpr
+        ⟨by
+          linarith [Real.add_one_le_exp (X ω), Real.add_one_le_exp (-X ω),
+            Real.exp_pos (X ω), Real.exp_pos (-X ω)],
+        by
+          linarith [Real.add_one_le_exp (X ω), Real.add_one_le_exp (-X ω),
+            Real.exp_pos (X ω), Real.exp_pos (-X ω)]⟩
+
+/-- A finite supremum of integrable real-valued functions is integrable. -/
+lemma integrable_ciSup_of_fintype {Ω : Type*} [MeasurableSpace Ω]
+    {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Y : ι → Ω → ℝ} {μ : Measure Ω}
+    (h_int : ∀ i, Integrable (Y i) μ) :
+    Integrable (fun x => ⨆ i, Y i x) μ := by
+  refine' Integrable.mono' _ _ _
+  · exact fun x => ∑ i, |Y i x|
+  · exact integrable_finsetSum _ fun i _ => (h_int i).abs
+  · have h_aesm : ∀ i, AEStronglyMeasurable (fun x => Y i x) μ :=
+      fun i => (h_int i).aestronglyMeasurable
+    choose g hg using h_aesm
+    refine' ⟨fun x => ⨆ i, g i x, ?_, ?_⟩
+    · exact (Measurable.iSup fun i => (hg i).1.measurable).stronglyMeasurable
+    · filter_upwards [ae_all_iff.2 fun i => (hg i).2] with x hx using by
+        simp +decide [hx]
+  · filter_upwards [] with x
+    refine' abs_le.mpr ⟨?_, ?_⟩
+    · exact le_trans
+        (neg_le_neg
+          (Finset.single_le_sum (fun i _ => abs_nonneg (Y i x))
+            (Finset.mem_univ (Classical.arbitrary ι))))
+        (le_trans
+          (neg_le_of_abs_le
+            (le_rfl : |Y (Classical.arbitrary ι) x| ≤ |Y (Classical.arbitrary ι) x|))
+          (le_ciSup (Finite.bddAbove_range fun i => Y i x) (Classical.arbitrary ι)))
+    · convert ciSup_le fun i =>
+        show Y i x ≤ ∑ i, |Y i x| from
+          le_trans (le_abs_self _) (Finset.single_le_sum
+            (fun a _ => abs_nonneg (Y a x)) (Finset.mem_univ i)) using 1
+
+/-- A finite supremum of absolute values of integrable real-valued functions is integrable. -/
+lemma integrable_ciSup_abs_of_fintype {Ω : Type*} [MeasurableSpace Ω]
+    {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Y : ι → Ω → ℝ} {μ : Measure Ω}
+    (h_int : ∀ i, Integrable (Y i) μ) :
+    Integrable (fun x => ⨆ i, |Y i x|) μ :=
+  integrable_ciSup_of_fintype (Y := fun i x => |Y i x|) (fun i => (h_int i).abs)
+
+/-- A finite supremum of a sub-Gaussian family is integrable. -/
+lemma integrable_ciSup_of_fintype_subGaussian {Ω : Type*} [MeasurableSpace Ω]
+    {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Y : ι → Ω → ℝ} {σ_sq : ι → ℝ} {μ : Measure Ω} [IsFiniteMeasure μ]
+    (h_sg : ∀ i, IsSubGaussian (Y i) (σ_sq i) μ) :
+    Integrable (fun x => ⨆ i, Y i x) μ :=
+  integrable_ciSup_of_fintype (fun i => (h_sg i).integrable)
+
+/-- A finite supremum of absolute values of a sub-Gaussian family is integrable. -/
+lemma integrable_ciSup_abs_of_fintype_subGaussian {Ω : Type*} [MeasurableSpace Ω]
+    {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Y : ι → Ω → ℝ} {σ_sq : ι → ℝ} {μ : Measure Ω} [IsFiniteMeasure μ]
+    (h_sg : ∀ i, IsSubGaussian (Y i) (σ_sq i) μ) :
+    Integrable (fun x => ⨆ i, |Y i x|) μ :=
+  integrable_ciSup_abs_of_fintype (fun i => (h_sg i).integrable)
 
 /-- A stochastic process {X_θ : θ ∈ A} indexed by a pseudo-metric space A is sub-Gaussian
     with parameter σ if for all θ, θ' ∈ A and all t ∈ ℝ:
@@ -136,13 +484,13 @@ theorem subGaussian_tail_bound {μ : Measure Ω} [IsProbabilityMeasure μ]
     by_cases h' : u ≤ X s ω - X t ω
     · left; exact h'
     · right
-      push_neg at h'
+      push Not at h'
       -- We have h' : X s ω - X t ω < u and hω : u ≤ |X s ω - X t ω|
       -- If X s ω - X t ω ≥ 0, then |X s ω - X t ω| = X s ω - X t ω < u, contradiction with hω
       -- So X s ω - X t ω < 0
       have h_neg : X s ω - X t ω < 0 := by
         by_contra h_nonneg
-        push_neg at h_nonneg
+        push Not at h_nonneg
         have : |X s ω - X t ω| = X s ω - X t ω := abs_of_nonneg h_nonneg
         linarith
       have habs : |X s ω - X t ω| = -(X s ω - X t ω) := abs_of_neg h_neg
@@ -238,8 +586,10 @@ lemma ae_eq_zero_of_mgf_le_one {μ : Measure Ω} [IsProbabilityMeasure μ]
           Filter.atTop (nhds 0) := by
         have h1 : Filter.Tendsto (fun n : ℕ => (n : ℝ) * ε) Filter.atTop Filter.atTop :=
           Filter.Tendsto.atTop_mul_const hε tendsto_natCast_atTop_atTop
-        have h2 : Filter.Tendsto (fun n : ℕ => exp (-((n : ℝ) * ε))) Filter.atTop (nhds 0) :=
-          by simpa only [Function.comp] using tendsto_exp_neg_atTop_nhds_zero.comp h1
+        have h2 : Filter.Tendsto (fun n : ℕ => exp (-((n : ℝ) * ε))) Filter.atTop (nhds 0) := by
+          change Filter.Tendsto (((fun x : ℝ => exp (-x)) ∘ fun n : ℕ => (n : ℝ) * ε))
+            Filter.atTop (nhds 0)
+          exact tendsto_exp_neg_atTop_nhds_zero.comp h1
         have h3' := ENNReal.tendsto_ofReal h2
         simp only [ENNReal.ofReal_zero] at h3'
         have h_eq : (fun n : ℕ => ENNReal.ofReal (exp (-(n : ℝ) * ε))) =
@@ -297,8 +647,10 @@ lemma ae_eq_zero_of_mgf_le_one {μ : Measure Ω} [IsProbabilityMeasure μ]
           Filter.atTop (nhds 0) := by
         have h1 : Filter.Tendsto (fun n : ℕ => (n : ℝ) * ε) Filter.atTop Filter.atTop :=
           Filter.Tendsto.atTop_mul_const hε tendsto_natCast_atTop_atTop
-        have h2 : Filter.Tendsto (fun n : ℕ => exp (-((n : ℝ) * ε))) Filter.atTop (nhds 0) :=
-          by simpa only [Function.comp] using tendsto_exp_neg_atTop_nhds_zero.comp h1
+        have h2 : Filter.Tendsto (fun n : ℕ => exp (-((n : ℝ) * ε))) Filter.atTop (nhds 0) := by
+          change Filter.Tendsto (((fun x : ℝ => exp (-x)) ∘ fun n : ℕ => (n : ℝ) * ε))
+            Filter.atTop (nhds 0)
+          exact tendsto_exp_neg_atTop_nhds_zero.comp h1
         have h3' := ENNReal.tendsto_ofReal h2
         simp only [ENNReal.ofReal_zero] at h3'
         have h_eq : (fun n : ℕ => ENNReal.ofReal (exp (-(n : ℝ) * ε))) =

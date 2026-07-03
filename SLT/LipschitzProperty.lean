@@ -51,7 +51,7 @@ lemma integrable_exp_mul_abs_eval_stdGaussianPi (t : ℝ) (i : Fin n) :
     by_cases hx : 0 ≤ w i
     · rw [abs_of_nonneg hx]
       exact le_add_of_nonneg_right (le_of_lt (exp_pos _))
-    · push_neg at hx
+    · push Not at hx
       rw [abs_of_neg hx]
       have h_eq : exp (t * -w i) = exp (-t * w i) := by ring_nf
       rw [h_eq]
@@ -72,7 +72,7 @@ lemma integrable_exp_mul_abs_eval_stdGaussianPi (t : ℝ) (i : Fin n) :
 lemma norm_integrable_stdGaussianPi :
     Integrable (fun w : Fin n → ℝ => ‖w‖) (GaussianMeasure.stdGaussianPi n) := by
   -- Use ‖w‖ ≤ Σᵢ |wᵢ| for pi-norm (sup norm)
-  apply Integrable.mono (integrable_finset_sum Finset.univ (fun i _ => integrable_abs_eval_stdGaussianPi i))
+  apply Integrable.mono (integrable_finsetSum Finset.univ (fun i _ => integrable_abs_eval_stdGaussianPi i))
   · exact continuous_norm.aestronglyMeasurable
   · filter_upwards with w
     simp only [Real.norm_eq_abs]

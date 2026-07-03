@@ -50,18 +50,18 @@ lemma metricEntropyOfNat_nonneg (n : ℕ) : 0 ≤ metricEntropyOfNat n := by
   unfold metricEntropyOfNat
   split_ifs with hn
   · exact le_rfl
-  · push_neg at hn
+  · push Not at hn
     exact Real.log_nonneg (Nat.one_le_cast.mpr (Nat.one_le_of_lt hn))
 
 lemma metricEntropyOfNat_mono {n m : ℕ} (h : n ≤ m) : metricEntropyOfNat n ≤ metricEntropyOfNat m := by
   unfold metricEntropyOfNat
   split_ifs with hn hm hm
   · exact le_rfl
-  · push_neg at hm
+  · push Not at hm
     exact Real.log_nonneg (Nat.one_le_cast.mpr (Nat.one_le_of_lt hm))
-  · push_neg at hn
+  · push Not at hn
     omega
-  · push_neg at hn
+  · push Not at hn
     exact Real.log_le_log (Nat.cast_pos.mpr (by omega : 0 < n)) (Nat.cast_le.mpr h)
 
 /-- Metric entropy: log of the covering number.
@@ -233,18 +233,18 @@ lemma sqrtEntropy_le_sqrt_log_card {eps : ℝ} {s : Set A} {t : Finset A}
     · -- If |t| = 0, then |t_opt| = 0 too
       have : t_opt.card = 0 := Nat.eq_zero_of_le_zero (by omega : t_opt.card ≤ 0)
       simp [this, ht_pos]
-    · push_neg at ht_pos
+    · push Not at ht_pos
       have ht_ge1 : 1 ≤ t.card := Nat.one_le_iff_ne_zero.mpr ht_pos
       by_cases ht_ge2 : 2 ≤ t.card
       · have : (1 : ℝ) ≤ t.card := by exact_mod_cast ht_ge1
         have hlog_t : 0 ≤ Real.log (t.card : ℝ) := Real.log_nonneg this
         linarith
-      · push_neg at ht_ge2
+      · push Not at ht_ge2
         have : t.card = 1 := by omega
         simp [this]
         exact h_log_topt
   · -- If |t_opt| > 1, use log monotonicity
-    push_neg at h_topt_le
+    push Not at h_topt_le
     have h_topt_pos : 0 < t_opt.card := by omega
     apply Real.log_le_log
     · exact Nat.cast_pos.mpr h_topt_pos
@@ -290,7 +290,7 @@ lemma sqrt_log_card_le_sqrtEntropy_of_card_le {eps : ℝ} {s : Set A} {n : ℕ}
       · simp
       · simp
     · -- Case m > 1: metricEntropyOfNat = log m
-      push_neg at h1
+      push Not at h1
       by_cases hn1 : n ≤ 1
       · -- n ≤ 1: log n ≤ 0 ≤ log m
         have hlog_n : Real.log n ≤ 0 := by
@@ -300,7 +300,7 @@ lemma sqrt_log_card_le_sqrtEntropy_of_card_le {eps : ℝ} {s : Set A} {n : ℕ}
         have hlog_m : 0 ≤ Real.log (m : ℝ) := Real.log_nonneg (Nat.one_le_cast.mpr (by omega : 1 ≤ m))
         linarith
       · -- n > 1: use log monotonicity
-        push_neg at hn1
+        push Not at hn1
         apply Real.log_le_log
         · exact Nat.cast_pos.mpr (by omega : 0 < n)
         · exact Nat.cast_le.mpr hnm
@@ -315,7 +315,7 @@ lemma sqrt_log_mul_le {a b : ℕ} (ha : 1 ≤ a) (hb : 1 ≤ b) :
   by_cases hb2 : b ≤ 1
   · have hb1 : b = 1 := le_antisymm hb2 hb
     simp [hb1]
-  push_neg at ha2 hb2
+  push Not at ha2 hb2
   -- log(a*b) = log a + log b
   have hlog_mul : Real.log ((a : ℝ) * (b : ℝ)) = Real.log (a : ℝ) + Real.log (b : ℝ) := by
     apply Real.log_mul
@@ -979,7 +979,6 @@ lemma dyadicRHS_le_twice_entropyIntegralTrunc_add_tail
   -- So dyadicRHS = 2δf(δ) ≤ 2*entropyIntegralTrunc + 2δf(δ) ✓
   by_cases hK1 : K = 1
   · subst hK1
-    simp only [] at *
     unfold dyadicRHS_real
     simp only [Finset.range_one, Finset.sum_singleton, Nat.cast_zero,
       neg_add_rev]

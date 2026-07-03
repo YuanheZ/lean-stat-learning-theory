@@ -97,15 +97,20 @@ lemma continuous_fderiv_of_continuous_deriv (f : ℝ → ℝ)
     (h_deriv : Continuous (fun x => deriv f x)) :
     Continuous (fun x => fderiv ℝ f x) := by
   have h_smulRight_cont : Continuous (fun a : ℝ => (1 : ℝ →L[ℝ] ℝ).smulRight a) := by
-    simpa using (ContinuousLinearMap.continuous
-      ((ContinuousLinearMap.smulRightL (𝕜 := ℝ) (E := ℝ) (Fₗ := ℝ))
-        (1 : ℝ →L[ℝ] ℝ)))
+    have h : Continuous (⇑((ContinuousLinearMap.smulRightL ℝ ℝ ℝ) (1 : ℝ →L[ℝ] ℝ))) := by
+      exact ContinuousLinearMap.continuous _
+    have heq : (fun a : ℝ => (1 : ℝ →L[ℝ] ℝ).smulRight a) =
+        ⇑((ContinuousLinearMap.smulRightL ℝ ℝ ℝ) (1 : ℝ →L[ℝ] ℝ)) := by
+      funext a
+      rfl
+    rwa [heq]
   have h_eq : (fun x => fderiv ℝ f x) =
       fun x => (1 : ℝ →L[ℝ] ℝ).smulRight (deriv f x) := by
     funext x
     ext
     simp [ContinuousLinearMap.smulRight_apply, mul_comm]
-  have h_cont := h_smulRight_cont.comp h_deriv
+  have h_cont : Continuous (fun x => (1 : ℝ →L[ℝ] ℝ).smulRight (deriv f x)) := by
+    simpa [Function.comp_def] using h_smulRight_cont.comp h_deriv
   simpa [h_eq] using h_cont
 
 lemma slice_fderiv_continuous {n : ℕ} (i : Fin n) (g : (Fin n → ℝ) → ℝ)
@@ -121,7 +126,7 @@ lemma slice_fderiv_continuous {n : ℕ} (i : Fin n) (g : (Fin n → ℝ) → ℝ
         fun y => partialDeriv i g (Function.update x i y) := by
       funext y
       exact deriv_sliceFunction_eq_partialDeriv i g hg_diff x y
-    simpa [h_eq] using (hg_grad_cont i).comp h_update_cont
+    simpa [h_eq, Function.comp_def] using (hg_grad_cont i).comp h_update_cont
   exact continuous_fderiv_of_continuous_deriv (f := sliceFunction i g x) h_deriv_cont
 
 /-! ## Conditional entropy and partial derivatives -/
@@ -439,7 +444,7 @@ lemma sum_expected_condEnt_le_grad_norm (n : ℕ) (g : (Fin n → ℝ) → ℝ)
         ∀ i : Fin n, Integrable (fun z => (partialDeriv i g z)^2)
           (GaussianMeasure.stdGaussianPi n) := fun i => (hg.2 i).integrable_sq
     have h_sum :=
-      (integral_finset_sum (μ := GaussianMeasure.stdGaussianPi n)
+      (integral_finsetSum (μ := GaussianMeasure.stdGaussianPi n)
         (s := Finset.univ) (f := fun i z => (partialDeriv i g z)^2)
         (fun i _ => h_int i))
     convert h_sum.symm using 1

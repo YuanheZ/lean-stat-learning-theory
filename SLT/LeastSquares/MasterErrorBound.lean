@@ -866,7 +866,7 @@ lemma goodEvent_implies_process_bound {n : ℕ} {σ t δ_star : ℝ}
     (g : X → ℝ) (hg : g ∈ empiricalOuterRegion n H (Real.sqrt (t * δ_star)) x) :
     |σ / n * ∑ i, w i * g (x i)| < 2 * empiricalNorm n (fun i => g (x i)) * Real.sqrt (t * δ_star) := by
   simp only [goodEvent, Set.mem_compl_iff, badEvent, Set.mem_setOf_eq] at hw
-  push_neg at hw
+  push Not at hw
   exact hw g hg
 
 /-- For t ≥ δ*, P(‖f̂ - f*‖_n² ≤ 16tδ*) ≥ 1 - exp(-ntδ*/(2σ²)).
@@ -938,7 +938,7 @@ theorem master_error_bound (hn : 0 < n)
         _ = t * δ_star := Real.sq_sqrt (le_of_lt htδ_pos)
         _ ≤ 16 * t * δ_star := by linarith [htδ_pos]
     · -- Case 2: ‖Δ‖_n > √(tδ*)
-      push_neg at hcase
+      push Not at hcase
       -- Δ = f_hat - f_star is in the shifted class
       have hΔ_in_H : (fun y => f_hat w y - M.f_star y) ∈ H := by
         rw [hH_def]

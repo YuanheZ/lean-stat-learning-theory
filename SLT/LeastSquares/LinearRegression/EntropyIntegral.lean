@@ -109,7 +109,7 @@ lemma metricEntropyOfNat_le_log {m : ℕ} {N : ℝ} (hN_pos : 1 < N) (hm_le : (m
   unfold metricEntropyOfNat
   split_ifs with h
   · exact Real.log_nonneg (le_of_lt hN_pos)
-  · push_neg at h
+  · push Not at h
     apply Real.log_le_log (Nat.cast_pos.mpr (by omega : 0 < m)) hm_le
 
 /-- The metric entropy of the linear localized ball is bounded by d * log(1 + 2δ/ε).
@@ -291,7 +291,7 @@ theorem linearEntropyIntegral_le_explicit (hn : 0 < n) (hd : 0 < d)
         rw [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
         exact h_pointwise ε hε
     · -- Case D > 1: split into (0, 1] and [1, D]
-      push_neg at hD1
+      push Not at hD1
       rw [← Set.Ioc_union_Ioc_eq_Ioc (by linarith : (0 : ℝ) ≤ 1) (le_of_lt hD1)]
       apply MeasureTheory.IntegrableOn.union
       · -- Integrable on (0, 1]: same argument as above
@@ -510,7 +510,7 @@ lemma linearEntropyIntegral_integrableOn {δ D : ℝ} (hδ : 0 < δ) (hDδ : D �
   -- Handle degenerate case D ≤ 0
   by_cases hD_pos : 0 < D
   case neg =>
-    push_neg at hD_pos
+    push Not at hD_pos
     have hempty : Set.Ioc 0 D = ∅ := Set.Ioc_eq_empty (not_lt.mpr hD_pos)
     rw [hempty]
     exact MeasureTheory.integrableOn_empty
@@ -562,7 +562,7 @@ lemma linearEntropyIntegral_integrableOn {δ D : ℝ} (hδ : 0 < δ) (hDδ : D �
           _ ≤ Real.sqrt (Real.log (1 + 2 * δ)) + Real.sqrt (-Real.log u) :=
               sqrt_add_le hlog_1_2d_nonneg hneg_log_nonneg
     · -- Case D > 1: Split into (0, 1] and (1, D]
-      push_neg at hD_le_one
+      push Not at hD_le_one
       rw [← Set.Ioc_union_Ioc_eq_Ioc (by linarith : (0 : ℝ) ≤ 1) (le_of_lt hD_le_one)]
       apply MeasureTheory.IntegrableOn.union
       · -- (0, 1]: same bound as D ≤ 1 case

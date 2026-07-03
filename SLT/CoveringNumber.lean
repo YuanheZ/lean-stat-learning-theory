@@ -110,7 +110,7 @@ lemma coveringNumber_singleton {a : A} {eps : ℝ} (heps : 0 ≤ eps) :
     rw [mem_singleton_iff] at hx
     rw [hx]
     exact mem_iUnion₂.mpr ⟨a, Finset.mem_singleton_self a, mem_closedBall_self heps⟩
-  simpa only [Finset.card_singleton] using coveringNumber_le_card hnet
+  simpa [Finset.card_singleton] using coveringNumber_le_card hnet
 
 /-!
 ## Properties relating covering and packing numbers
@@ -602,7 +602,7 @@ lemma exists_maximal_packing {E : Type*} [PseudoMetricSpace E]
       use t, Finset.Subset.refl t, ht_pack
       intro x hxs hxt
       by_contra h
-      push_neg at h
+      push Not at h
       -- x is ε-separated from t, so we could add x
       have hx_sep : ∀ y ∈ t, eps < dist x y := fun y hy => h y hy
       have ht'_pack : IsPacking (insert x t) eps s := by
@@ -626,7 +626,7 @@ lemma exists_maximal_packing {E : Type*} [PseudoMetricSpace E]
       intro t ht_pack heq
       by_cases hmaximal : ∀ x ∈ s, x ∉ t → ∃ y ∈ t, dist x y ≤ eps
       · use t, Finset.Subset.refl t, ht_pack, hmaximal
-      · push_neg at hmaximal
+      · push Not at hmaximal
         obtain ⟨x, hxs, hxt, hx_sep⟩ := hmaximal
         -- Add x to get a larger packing
         have ht'_pack : IsPacking (insert x t) eps s := by
@@ -848,7 +848,7 @@ lemma l1pmf_mean_coord (θ : EuclideanSpace ℝ (Fin d)) {R : ℝ} (hR : 0 < R)
   -- The none term contributes 0
   simp only [vecθ, WithLp.ofLp_zero, Pi.zero_apply, smul_zero, zero_add]
   -- For EuclideanSpace, use single_apply and collapse the sum
-  simp only [EuclideanSpace.single_apply, smul_ite, smul_zero]
+  simp only [PiLp.single_apply, smul_ite, smul_zero]
   rw [Finset.sum_ite_eq Finset.univ j (fun x => _ • (R * sgn (θ x)))]
   simp only [Finset.mem_univ, ite_true]
   -- Now simplify the PMF value and sign
@@ -872,7 +872,7 @@ lemma l1pmf_second_moment_coord (θ : EuclideanSpace ℝ (Fin d)) {R : ℝ} (hR 
   -- The none term contributes 0^2 = 0
   simp only [vecθ, WithLp.ofLp_zero, Pi.zero_apply, sq]
   -- Handle EuclideanSpace.single_apply
-  simp only [EuclideanSpace.single_apply, ite_mul, mul_ite, mul_zero, zero_mul, smul_ite, smul_zero]
+  simp only [PiLp.single_apply, ite_mul, mul_ite, mul_zero, zero_mul, smul_ite, smul_zero]
   -- Simplify nested if with same condition
   have hsum_simp : ∀ x, (if j = x then (if j = x then ((l1pmf θ R hθ) (some x)).toReal •
       (R * sgn (θ x) * (R * sgn (θ x))) else 0) else 0) =
@@ -919,7 +919,7 @@ lemma exists_avgθ_close (θ : EuclideanSpace ℝ (Fin d)) {R eps : ℝ} (hR : 0
       rw [Real.dist_eq, sq_abs]
     simp_rw [hdist_eq]
     -- Push integral inside sum (finite sum)
-    rw [MeasureTheory.integral_finset_sum Finset.univ]
+    rw [MeasureTheory.integral_finsetSum Finset.univ]
     swap
     · intro j _
       exact Integrable.of_finite
@@ -1010,8 +1010,8 @@ lemma exists_avgθ_close (θ : EuclideanSpace ℝ (Fin d)) {R eps : ℝ} (hR : 0
                     rw [integral_const_mul]
                     have hexpand_sq : ∀ ω, (∑ i, Y i ω) ^ 2 = ∑ i, ∑ l, Y i ω * Y l ω := by intro ω; rw [sq, Finset.sum_mul_sum]
                     simp_rw [hexpand_sq]
-                    rw [integral_finset_sum]; swap; · intro i _; exact Integrable.of_finite
-                    simp_rw [integral_finset_sum _ (fun _ _ => Integrable.of_finite)]
+                    rw [integral_finsetSum]; swap; · intro i _; exact Integrable.of_finite
+                    simp_rw [integral_finsetSum _ (fun _ _ => Integrable.of_finite)]
                     -- Establish independence of Y_i under ν using iIndepFun_pi
                     have hindep : ProbabilityTheory.iIndepFun (fun i (ω : Fin k → Option (Fin d)) => Y i ω) ν := by
                       simp only [Y]
@@ -1375,7 +1375,7 @@ lemma coveringNumber_image_le_of_lipschitz [DecidableEq B] {L : ℝ} (hL : 0 < L
   by_cases h : coveringNumber eps s = ⊤
   · simp [h]
   -- Otherwise, there exists a finite ε-net for s
-  · push_neg at h
+  · push Not at h
     -- Extract the covering number as a natural number
     obtain ⟨n, hn⟩ := WithTop.ne_top_iff_exists.mp h
     -- The set of ε-net sizes is nonempty (since coveringNumber < ⊤)
@@ -1389,7 +1389,6 @@ lemma coveringNumber_image_le_of_lipschitz [DecidableEq B] {L : ℝ} (hL : 0 < L
       exact h this
     -- Get a finite ε-net achieving the infimum
     have hmem := csInf_mem hne
-    unfold coveringNumber at hmem
     obtain ⟨t, ht_net, ht_card⟩ := hmem
     have hnet_image := IsENet.image_of_lipschitz (le_of_lt hL) hf ht_net
     have hcard_le : (t.image f).card ≤ t.card := Finset.card_image_le
@@ -1421,7 +1420,7 @@ theorem coveringNumber_image_of_isometry {f : A → B} (hf : Isometry f) (hbij :
   · -- Backward: coveringNumber s ≤ coveringNumber (f '' s)
     by_cases hcover : coveringNumber eps (f '' s) = ⊤
     · simp [hcover]
-    push_neg at hcover
+    push Not at hcover
     have hne : {m : WithTop ℕ | ∃ t : Finset B, IsENet t eps (f '' s) ∧ (t.card : WithTop ℕ) = m}.Nonempty := by
       by_contra hemp
       have : coveringNumber eps (f '' s) = ⊤ := by

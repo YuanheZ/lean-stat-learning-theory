@@ -245,14 +245,17 @@ theorem taylor_order_one {f : ℝ → ℝ} (hf : ContDiff ℝ 2 f) {a b : ℝ} (
     ∃ ξ ∈ Ioo a b,
     f b = f a + deriv f a * (b - a) + (1/2) * deriv (deriv f) ξ * (b - a)^2 := by
   -- Use taylor_mean_remainder_lagrange_iteratedDeriv with n = 1
-  have hf' : ContDiffOn ℝ (1 + 1) f (Icc a b) := hf.contDiffOn
-  obtain ⟨ξ, hξ_mem, hξ_eq⟩ := taylor_mean_remainder_lagrange_iteratedDeriv hab hf'
-  use ξ, hξ_mem
-  -- Simplify the types
-  have hone_eq : (One.one : ℕ) = 1 := rfl
-  simp only [hone_eq] at hξ_eq
-  -- taylorWithinEval f 1 (Icc a b) a b = f(a) + f'(a)(b-a)
-  have htaylor : taylorWithinEval f 1 (Icc a b) a b = f a + deriv f a * (b - a) := by
+  have hf' : ContDiffOn ℝ (1 + 1) f (uIcc a b) := by
+    rw [uIcc_of_lt hab]
+    norm_num
+    exact hf.contDiffOn
+  obtain ⟨ξ, hξ_mem, hξ_eq⟩ := taylor_mean_remainder_lagrange_iteratedDeriv hab.ne hf'
+  use ξ
+  constructor
+  · simpa [uIoo_of_lt hab] using hξ_mem
+  -- taylorWithinEval f 1 (uIcc a b) a b = f(a) + f'(a)(b-a)
+  have htaylor : taylorWithinEval f 1 (uIcc a b) a b = f a + deriv f a * (b - a) := by
+    rw [uIcc_of_lt hab]
     rw [taylorWithinEval_succ, taylor_within_zero_eval]
     simp only [Nat.factorial_zero, Nat.cast_one]
     rw [iteratedDerivWithin_one]

@@ -97,7 +97,9 @@ lemma zero_mem_linearLocalizedBall (x : Fin n → EuclideanSpace ℝ (Fin d)) {�
   simp only [Set.mem_sep_iff]
   constructor
   · exact zero_mem_linearPredictorClass
-  · convert empiricalNorm_zero n ▸ hδ
+  · change empiricalNorm n (0 : Fin n → ℝ) ≤ δ
+    calc empiricalNorm n (0 : Fin n → ℝ) = 0 := empiricalNorm_zero n
+      _ ≤ δ := hδ
 
 /-! ## Covering Number in Empirical Space
 

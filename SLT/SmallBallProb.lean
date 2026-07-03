@@ -114,7 +114,7 @@ lemma integral_exp_neg_mul_le_inv_of_dens_le_one
         rw [h_eq]
         have h_sing : IntegrableOn (fun x => exp (-t * x)) {0} volume :=
           integrableOn_singleton (hx := by simp)
-        rw [setIntegral_union (disjoint_singleton_right.mpr notMem_Ioi_self)
+        rw [setIntegral_union (disjoint_singleton_right.mpr Set.self_notMem_Ioi)
           (measurableSet_singleton 0) (exp_neg_integrableOn_Ioi 0 ht) h_sing]
         simp
     _ = 1 / t := integral_exp_neg_mul_Ioi_zero t ht
@@ -191,7 +191,7 @@ lemma integral_exp_neg_mul_le_inv_of_dens_le_one_ae
         rw [h_eq]
         have h_sing : IntegrableOn (fun x => exp (-t * x)) {0} volume :=
           integrableOn_singleton (hx := by simp)
-        rw [setIntegral_union (disjoint_singleton_right.mpr notMem_Ioi_self)
+        rw [setIntegral_union (disjoint_singleton_right.mpr Set.self_notMem_Ioi)
           (measurableSet_singleton 0) (exp_neg_integrableOn_Ioi 0 ht) h_sing]
         simp
     _ = 1 / t := integral_exp_neg_mul_Ioi_zero t ht
@@ -227,10 +227,12 @@ theorem mgf_neg_le_inv_of_pdf_bounded
     -- Use that pdf integrates to the pushforward measure
     have h_integral : ∫⁻ x in Iio 0, pdf X μ volume x ∂volume ≤ μ.map X (Iio 0) :=
       setLIntegral_pdf_le_map X μ volume (Iio 0)
-    rw [h_map, le_zero_iff] at h_integral
+    have h_integral_zero : ∫⁻ x in Iio 0, pdf X μ volume x ∂volume = 0 := by
+      refine le_antisymm ?_ bot_le
+      simpa [h_map] using h_integral
     -- Since pdf is non-negative and integral is 0, pdf is 0 a.e.
     have h_ae_zero : ∀ᵐ x ∂volume, x ∈ Iio 0 → pdf X μ volume x = 0 :=
-      (setLIntegral_eq_zero_iff measurableSet_Iio (measurable_pdf X μ volume)).mp h_integral
+      (setLIntegral_eq_zero_iff measurableSet_Iio (measurable_pdf X μ volume)).mp h_integral_zero
     filter_upwards [h_ae_zero] with x hx hx_neg
     exact hx (Set.mem_Iio.mpr hx_neg)
   calc ∫ x, (pdf X μ volume x).toReal * exp ((-t) * x)
