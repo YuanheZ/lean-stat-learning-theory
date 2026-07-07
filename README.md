@@ -34,7 +34,9 @@
 
 **Textbook-faithful and citable.** Each major theorem is cross-referenced to its precise source — Vershynin (2018), Wainwright (2019), Boucheron–Lugosi–Massart (2013) — down to theorem numbers (see [Major Results](#major-results)). If you are teaching or studying from these books, you can jump straight to the corresponding formal statement. Formalization also surfaced implicit assumptions and missing steps in the standard textbook proofs, which the Lean code makes explicit.
 
-**Fully verified, no gaps.** The library contains no `sorry`, `axiom`, `admit`, or `native_decide`. Every result compiles against Mathlib `v4.31.0`.
+**Fully verified, no gaps.** The library contains no `sorry`, `axiom`, `admit`, or `native_decide`. Every result compiles against latest Mathlib.
+
+**Actively maintained.** SLT is a living library, not a frozen paper artifact: we keep formalizing new results in statistical learning theory and high-dimensional probability, and each release tracks the latest Mathlib/Lean version so the library stays compatible with the ecosystem — always under the same sorry-free guarantee.
 
 **Built to be built on.** Apache-2.0 licensed, pinned to a released Lean/Mathlib toolchain, and usable as a `lake` dependency in one line (see [Getting Started](#getting-started)).
 
