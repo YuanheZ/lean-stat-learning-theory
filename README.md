@@ -36,7 +36,7 @@
 
 **Fully verified, no gaps.** The library contains no `sorry`, `axiom`, `admit`, or `native_decide`. Every result compiles against latest Mathlib.
 
-**Actively maintained.** SLT is a living library, not a frozen paper artifact: we keep formalizing new results in statistical learning theory and high-dimensional probability, and each release tracks the latest Mathlib/Lean version so the library stays compatible with the ecosystem — always under the same sorry-free guarantee.
+**Actively maintained.** We keep formalizing new results in statistics and learning theory, and each release tracks the latest Mathlib/Lean version so the library stays compatible with the ecosystem — always under the same sorry-free guarantee.
 
 **Built to be built on.** Apache-2.0 licensed, pinned to a released Lean/Mathlib toolchain, and usable as a `lake` dependency in one line (see [Getting Started](#getting-started)).
 
