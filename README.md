@@ -32,13 +32,15 @@
 
 **Theorems you won't find in Mathlib.** SLT provides machine-checked proofs of workhorse results of modern statistics and learning theory that are not in Mathlib.
 
-**Textbook-faithful and citable.** Each major theorem is cross-referenced to its precise source — Vershynin (2018), Wainwright (2019), Boucheron–Lugosi–Massart (2013) — down to theorem numbers (see [Major Results](#major-results)). If you are teaching or studying from these books, you can jump straight to the corresponding formal statement. Formalization also surfaced implicit assumptions and missing steps in the standard textbook proofs, which the Lean code makes explicit.
-
 **Fully verified, no gaps.** The library contains no `sorry`, `axiom`, `admit`, or `native_decide`. Every result compiles against latest Mathlib.
+
+**Human-supervised, expert-audited.** Development is semi-autonomous: human-in-the-loop, and statement is evaluated by domain experts for fidelity to the intended mathematics. 
 
 **Actively maintained.** We keep formalizing new results in statistics and learning theory, and each release tracks the latest Mathlib/Lean version so the library stays compatible with the ecosystem — always under the same sorry-free guarantee.
 
 **Built to be built on.** Apache-2.0 licensed, pinned to a released Lean/Mathlib toolchain, and usable as a `lake` dependency in one line (see [Getting Started](#getting-started)).
+
+**Textbook-faithful and citable.** Each major theorem is cross-referenced to its precise source down to theorem numbers (see [Major Results](#major-results)). If you are teaching or studying from these books, you can jump straight to the corresponding formal statement. Formalization also surfaced implicit assumptions and missing steps in the standard textbook proofs, which the Lean code makes explicit.
 
 **More than code.** We also release a practical [recipe for human–AI collaborative formalization](#recipe-for-vibe-formalization) distilled from our supervised development with Claude Code and Codex.
 
