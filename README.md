@@ -55,13 +55,13 @@
 | Layer | Modules | What's inside |
 |-------|---------|---------------|
 | Foundations | `SmallBallProb`, `MeasureInfrastructure`, `SubGaussian` | Basic probability tools; scalar sub-Gaussian variables and processes, `psi2` scale, finite maxima, Bernstein-style CGF tails. |
+| Matrix infrastructure | `MatrixInfra/` | Singular values and SVD, Courant–Fischer, Eckart–Young–Mirsky, Weyl perturbation, Davis–Kahan, matrix calculus. |
+| High-dimensional probability & RMT | `HansonWright`, `RMT/` | Hanson–Wright MGF certificates and tails; sub-Gaussian matrix norm bounds, two-sided singular-value bounds, Lieb's inequality, matrix Bernstein. |
 | Metric entropy | `CoveringNumber`, `MetricEntropy` | Nets, covering/packing numbers, entropy integrands, Euclidean and `l1` covering bounds. |
 | Empirical processes | `Chaining`, `Dudley`, `TDudley` | Chaining, Dudley's entropy integral theorem, truncated Dudley for global oscillation. |
 | Gaussian concentration | `GaussianMeasure`, `GaussianPoincare/`, `GaussianSobolevDense/`, `GaussianLipConcen` | Gaussian Poincaré via Rademacher approximation and Lévy continuity; Sobolev density tools; Gaussian Lipschitz concentration. |
 | Entropy & log-Sobolev | `EfronStein`, `GaussianLSI/` | Efron–Stein; entropy, duality, subadditivity, Han's inequality; Bernoulli and Gaussian log-Sobolev inequalities. |
 | Least squares | `LeastSquares/` | Localized least-squares framework, master error bound, linear and `l1` regression with minimax rates. |
-| Matrix infrastructure | `MatrixInfra/` | Singular values and SVD, Courant–Fischer, Eckart–Young–Mirsky, Weyl perturbation, Davis–Kahan, matrix calculus. |
-| High-dimensional probability & RMT | `HansonWright`, `RMT/` | Hanson–Wright MGF certificates and tails; sub-Gaussian matrix norm bounds, two-sided singular-value bounds, Lieb's inequality, matrix Bernstein. |
 
 ## Major Results
 
