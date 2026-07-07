@@ -20,7 +20,7 @@
 - [Library Overview](#library-overview)
 - [Major Results](#major-results)
 - [Getting Started](#getting-started)
-- [The ICML 2026 Paper](#the-icml-2026-paper)
+- [ICML 2026](#icml-2026)
 - [Dataset for LLM Formal Reasoning](#dataset-for-llm-formal-reasoning)
 - [Recipe for Vibe Formalization](#recipe-for-vibe-formalization)
 - [Citation](#citation)
