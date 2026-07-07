@@ -1,5 +1,7 @@
 <h1 align="center">Statistical Learning Theory in Lean 4</h1>
 
+<h4 align="center">The first comprehensive Lean 4 formalization of statistical learning theory,<br>a machine-checked, reusable foundation for formalizing ML theory.</h4>
+
 <p align="center">
   <!-- TODO: point the ICML badge to your OpenReview / PMLR page once available -->
   <a href="https://icml.cc/virtual/2026/poster/62752"><img src="https://img.shields.io/badge/ICML%202026-Accepted-brightgreen?style=for-the-badge" alt="ICML 2026"></a>
