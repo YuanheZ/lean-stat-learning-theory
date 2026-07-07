@@ -11,7 +11,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-lightgrey?style=for-the-badge" alt="License"></a>
 </p>
 
-**SLT** formalizes statistical learning theory in Lean 4 from the ground up, built on empirical process theory: Gaussian Lipschitz concentration, Dudley's entropy integral, and localized least-squares regression with sharp minimax rates. The core development is **accepted at ICML 2026**. Since then, the library has grown well beyond the paper into a broader **high-dimensional probability library**, adding Hanson–Wright inequalities, matrix perturbation theory (Courant–Fischer, Eckart–Young–Mirsky, Weyl, Davis–Kahan), Lieb concavity, and the matrix Bernstein inequality.
+**SLT** formalizes statistical learning theory in Lean 4 from the ground up, built on empirical process theory: Gaussian Lipschitz concentration, Dudley's entropy integral, and localized least-squares regression with sharp minimax rates. The core development is accepted at ICML 2026. Since then, the library has grown well beyond the paper into a broader high-dimensional probability library, adding Hanson–Wright inequalities, matrix perturbation theory (Courant–Fischer, Eckart–Young–Mirsky, Weyl, Davis–Kahan), Lieb concavity, and the matrix Bernstein inequality.
 
 ## Table of Contents
 
