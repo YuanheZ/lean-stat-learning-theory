@@ -258,9 +258,8 @@ lemma sum_expected_condEnt_le_grad_norm (n : ℕ) (g : (Fin n → ℝ) → ℝ)
   classical
   have hg_L2 : Integrable (fun z => (g z)^2) (GaussianMeasure.stdGaussianPi n) :=
     (hg.1).integrable_sq
-  have hf_meas : Measurable (fun x => (g x)^2) := by
-    have h_meas : Measurable g := hg_diff.continuous.measurable
-    simpa [pow_two] using h_meas.mul h_meas
+  have hf_meas : Measurable (fun x => (g x)^2) :=
+    hg_diff.continuous.measurable.pow_const 2
   have hf_nn : 0 ≤ᵐ[GaussianMeasure.stdGaussianPi n] (fun x => (g x)^2) :=
     Eventually.of_forall (fun x => sq_nonneg (g x))
   have hEf_log_int :
@@ -466,9 +465,8 @@ theorem gaussian_logSobolev_W12_pi {n : ℕ} {g : (Fin n → ℝ) → ℝ}
       Integrable (fun x => (g x)^2 * log ((g x)^2)) (GaussianMeasure.stdGaussianPi n)) :
     LogSobolev.entropy (GaussianMeasure.stdGaussianPi n) (fun x => (g x)^2) ≤
       2 * ∫ x, gradNormSq n g x ∂(GaussianMeasure.stdGaussianPi n) := by
-  have hf_meas : Measurable (fun x => (g x)^2) := by
-    have h_meas : Measurable g := hg_diff.continuous.measurable
-    simpa [pow_two] using h_meas.mul h_meas
+  have hf_meas : Measurable (fun x => (g x)^2) :=
+    hg_diff.continuous.measurable.pow_const 2
   have hf_nn : 0 ≤ᵐ[GaussianMeasure.stdGaussianPi n] (fun x => (g x)^2) :=
     Eventually.of_forall (fun x => sq_nonneg (g x))
   have hf_int : Integrable (fun x => (g x)^2) (GaussianMeasure.stdGaussianPi n) :=

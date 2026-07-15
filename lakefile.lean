@@ -28,7 +28,7 @@ package «SLT» where
   moreServerOptions := linter
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.31.0"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.32.0"
 
 @[default_target]
 lean_lib «SLT» where
@@ -36,4 +36,4 @@ lean_lib «SLT» where
 
 meta if get_config? env = some "dev" then
 require «doc-gen4» from git
-  "https://github.com/leanprover/doc-gen4" @ "v4.31.0"
+  "https://github.com/leanprover/doc-gen4" @ "v4.32.0"

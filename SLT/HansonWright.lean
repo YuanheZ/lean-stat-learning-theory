@@ -715,7 +715,7 @@ lemma randomQuadraticForm_aemeasurable {μ : Measure Ω} {n : ℕ}
   exact Finset.aemeasurable_fun_sum _ fun i _ =>
     Finset.aemeasurable_fun_sum _ fun j _ =>
       (((hX_meas i).mul (hX_meas j)).const_mul (A i j)).congr
-        (ae_of_all _ fun ω => by ring)
+        (ae_of_all _ fun ω => by simp only [Pi.mul_apply, mul_assoc])
 
 lemma randomQuadraticForm_mem_Icc_of_ae_coord_bound {μ : Measure Ω} {n : ℕ}
     (A : Matrix (Fin n) (Fin n) ℝ) {X : Fin n → Ω → ℝ} {K : ℝ}

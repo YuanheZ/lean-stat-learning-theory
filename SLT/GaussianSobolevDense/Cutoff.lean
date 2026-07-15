@@ -381,13 +381,10 @@ lemma cutoff_gradient_error_bound (f : E n → ℝ)
     apply Measurable.pow_const
     apply Measurable.coe_nnreal_ennreal
     apply Measurable.nnnorm
-    apply Measurable.smul
-    · apply Measurable.sub measurable_const
-      have hχR_cont : Continuous (smoothCutoffR (n := n) R) := by
-        unfold smoothCutoffR
-        exact smoothCutoff_contDiff.continuous.comp (continuous_norm.div_const R)
-      exact hχR_cont.measurable
-    · exact hg'_meas.measurable
+    have hχR_cont : Continuous (smoothCutoffR (n := n) R) := by
+      unfold smoothCutoffR
+      exact smoothCutoff_contDiff.continuous.comp (continuous_norm.div_const R)
+    exact (measurable_const.sub hχR_cont.measurable).smul hg'_meas.measurable
 
   -- F = F' ae and lintegral equality
   have hFF'_ae : ∀ R, F R =ᵐ[stdGaussianE n] F' R := by

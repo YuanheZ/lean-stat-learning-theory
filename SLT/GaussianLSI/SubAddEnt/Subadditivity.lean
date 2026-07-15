@@ -839,7 +839,6 @@ lemma condExpExceptCoord_mul_log_condExpFirstK_integrable (i : Fin n) (f : (Fin 
     -- Apply measure-preserving property
     _ = ∫⁻ z, ‖f z * log (T_i z)‖₊ ∂μˢ := by
         have h := hmp.lintegral_comp (hf_meas.mul (measurable_log.comp hT_meas)).nnnorm.coe_nnreal_ennreal
-        simp only [Function.comp_apply] at h
         exact h
     _ < ⊤ := hflogT_int.2
 

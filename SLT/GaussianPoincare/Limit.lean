@@ -434,13 +434,15 @@ lemma taylor_bound_on_law {f : ℝ → ℝ} (hf : CompactlySupportedSmooth f) (n
   -- Rewrite each integral using change of variables
   have eq1 : ∫ x, (f x)^2 ∂(rademacherProductMeasure (n + 1)).map (rademacherSumProd (n + 1)) =
       ∫ x, (f (rademacherSumProd (n + 1) x))^2 ∂rademacherProductMeasure (n + 1) := by
-    rw [integral_map haem (hf.continuous.pow 2).aestronglyMeasurable]
+    simpa only [Pi.pow_apply] using
+      integral_map haem (hf.continuous.pow 2).aestronglyMeasurable
   have eq2 : ∫ x, f x ∂(rademacherProductMeasure (n + 1)).map (rademacherSumProd (n + 1)) =
       ∫ x, f (rademacherSumProd (n + 1) x) ∂rademacherProductMeasure (n + 1) := by
     rw [integral_map haem hf.continuous.aestronglyMeasurable]
   have eq3 : ∫ x, (deriv f x)^2 ∂(rademacherProductMeasure (n + 1)).map (rademacherSumProd (n + 1)) =
       ∫ x, (deriv f (rademacherSumProd (n + 1) x))^2 ∂rademacherProductMeasure (n + 1) := by
-    rw [integral_map haem ((deriv_continuous_of_compactlySupported hf).pow 2).aestronglyMeasurable]
+    simpa only [Pi.pow_apply] using
+      integral_map haem ((deriv_continuous_of_compactlySupported hf).pow 2).aestronglyMeasurable
   have eq4 : ∫ x, |deriv f x| ∂(rademacherProductMeasure (n + 1)).map (rademacherSumProd (n + 1)) =
       ∫ x, |deriv f (rademacherSumProd (n + 1) x)| ∂rademacherProductMeasure (n + 1) := by
     rw [integral_map haem (deriv_continuous_of_compactlySupported hf).abs.aestronglyMeasurable]

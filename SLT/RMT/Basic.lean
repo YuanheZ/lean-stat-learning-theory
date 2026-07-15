@@ -4441,7 +4441,9 @@ theorem norm_subgaussian_matrices_expectation_hdp_of_pos {m n : ℕ} (hm : 0 < m
     have hbase := inner_randomMatrix_measurable hA.measurable q.1.1 q.1.2
     by_cases hsign : q.2
     · simpa [Z, signedBilinearValue, hsign] using hbase
-    · simpa [Z, signedBilinearValue, hsign] using hbase.neg
+    · convert hbase.neg using 1
+      funext ω
+      simp [Z, signedBilinearValue, hsign]
   have hZ_int : ∀ q ∈ signed, Integrable (Z q) μ := fun q hq => (hZ_mgf q hq).integrable
   have hZ_exp : ∀ q ∈ signed, ∀ t, Integrable (fun ω => exp (t * Z q ω)) μ :=
     fun q hq t => (hZ_mgf q hq).integrable_exp_mul t
@@ -4789,7 +4791,9 @@ theorem sampleCovarianceDeviationOperatorNorm_expectation_hdp_bound_of_pos
         (A := A) hA.measurable q.1
     by_cases hsign : q.2
     · simpa [Z, signedSampleCovarianceDeviationValue, hsign] using hbase
-    · simpa [Z, signedSampleCovarianceDeviationValue, hsign] using hbase.neg
+    · convert hbase.neg using 1
+      funext ω
+      simp [Z, signedSampleCovarianceDeviationValue, hsign]
   have hZ_int : ∀ q ∈ signed, Integrable (Z q) μ := by
     intro q hq
     have hbase :=
