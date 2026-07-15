@@ -7,7 +7,7 @@
   <a href="https://icml.cc/virtual/2026/poster/62752"><img src="https://img.shields.io/badge/ICML%202026-Accepted-brightgreen?style=for-the-badge" alt="ICML 2026"></a>
   <a href="https://arxiv.org/abs/2602.02285"><img src="https://img.shields.io/badge/arXiv-2602.02285-red?style=for-the-badge" alt="Paper"></a>
   <a href="https://huggingface.co/collections/liminho123/statistical-learning-theory-in-lean-4"><img src="https://img.shields.io/badge/🤗-Dataset-yellow?style=for-the-badge" alt="Dataset"></a>
-  <a href="https://github.com/YuanheZ/lean-stat-learning-theory/releases/tag/v4.31.0"><img src="https://img.shields.io/badge/Lean-v4.31.0-blue?style=for-the-badge" alt="Lean v4.31.0"></a>
+  <a href="https://github.com/YuanheZ/lean-stat-learning-theory/releases/tag/v4.32.0"><img src="https://img.shields.io/badge/Lean-v4.32.0-blue?style=for-the-badge" alt="Lean v4.32.0"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-lightgrey?style=for-the-badge" alt="License"></a>
 </p>
 
@@ -46,6 +46,7 @@
 
 ## News
 
+- **2026-07** — Release [`v4.32.0`](https://github.com/YuanheZ/lean-stat-learning-theory/releases/tag/v4.32.0): upgraded to Lean/Mathlib `v4.32.0` and updated measurability, mapped-integral, and pointwise-operation proofs for the latest APIs.
 - **2026-07** — Release [`v4.31.0`](https://github.com/YuanheZ/lean-stat-learning-theory/releases/tag/v4.31.0): upgraded to Lean/Mathlib `v4.31.0` and a major expansion beyond the paper — Hanson–Wright, matrix spectral & perturbation theory (SVD, Courant–Fischer, EYM, Weyl, Davis–Kahan), truncated Dudley, Lieb's inequality, and matrix Bernstein.
 - **2026-05** — Our paper is **accepted at ICML 2026**. 🎉
 - **2026-02** — Initial public release of the ICML 2026 artifact and the [arXiv preprint](https://arxiv.org/abs/2602.02285); Lean 4 training datasets released on [HuggingFace](https://huggingface.co/collections/liminho123/statistical-learning-theory-in-lean-4).
@@ -126,7 +127,7 @@
 
 ## Getting Started
 
-The project is pinned to Lean and Mathlib `v4.31.0`.
+The project is pinned to Lean and Mathlib `v4.32.0`.
 
 ### Build the library
 
@@ -145,11 +146,11 @@ LEAN_NUM_THREADS=$(nproc) lake build SLT.RMT.MatBern
 
 ### Use SLT in your own project
 
-Add SLT as a dependency in your `lakefile.lean` (your project's toolchain should match `leanprover/lean4:v4.31.0`):
+Add SLT as a dependency in your `lakefile.lean` (your project's toolchain should match `leanprover/lean4:v4.32.0`):
 
 ```lean
 require «SLT» from git
-  "https://github.com/YuanheZ/lean-stat-learning-theory" @ "v4.31.0"
+  "https://github.com/YuanheZ/lean-stat-learning-theory" @ "v4.32.0"
 ```
 
 then import the modules you need, e.g. `import SLT.Dudley` or `import SLT.RMT.MatBern`.
