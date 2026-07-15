@@ -95,7 +95,7 @@
 | `bad_event_probability_bound` | Wainwright (2019), Lemma 13.12 |
 | `l1BallImage_coveringNumber_le` | Raskutti et al. (2011), Lemma 4, q=1 |
 
-### Beyond the paper: the `v4.31.0` expansion
+### Beyond the paper
 
 | Lean name | Reference / role |
 |------|------------------|
